@@ -340,7 +340,7 @@ class ResultManager:
             return self.result_dict.get((project_name, pair_id), None)
         
     def get_result_by_id(self, pair_id) -> TransformReuslt:
-        project_name = self.result_dict.keys()[0][0]
+        project_name = list(self.result_dict.keys())[0][0]
         return self.result_dict.get((project_name, pair_id), None)
     
     def remove(self, keys):

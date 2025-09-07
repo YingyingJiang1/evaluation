@@ -264,7 +264,6 @@ def get_test_coverage_dataset(min_target_codelines, project_name, build_tool, ac
                         if coverages.test_class not in result:
                             result[coverages.test_class] = []
                         result[coverages.test_class].append(method_map[key])
-    
     # 修改map：key为(), value为list of test classes
     # method_to_test_classes = {}
     # for test_class, methods in result.items():

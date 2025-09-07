@@ -5,7 +5,7 @@ TOP_PERCENT_AUTHOR = 0.25
 
 class ProjectConfig:
     def __init__(self, name, repo_path, file_tag_output_csv, method_tag_output_csv,
-                 allowed_suffix='.java', include_dirs=[],top_percent=TOP_PERCENT_AUTHOR, build_tool="maven", jars= []):
+                 allowed_suffix='.java', include_dirs=[],top_percent=TOP_PERCENT_AUTHOR, build_tool="gradle", jars= []):
         self.name = name
         self.repo_path = repo_path
         self.file_tag_output_csv = file_tag_output_csv
