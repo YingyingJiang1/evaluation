@@ -1,0 +1,37 @@
+    private static void writeCommandConfigJson(JsonGenerator json, HystrixCommandKey key, HystrixCommandConfiguration commandConfig) throws IOException {
+        json.writeObjectFieldStart(key.name());
+        json.writeStringField("threadPoolKey", commandConfig.getThreadPoolKey().name());
+        json.writeStringField("groupKey", commandConfig.getGroupKey().name());
+        json.writeObjectFieldStart("execution");
+        HystrixCommandConfiguration.HystrixCommandExecutionConfig executionConfig = commandConfig.getExecutionConfig();
+        json.writeStringField("isolationStrategy", executionConfig.getIsolationStrategy().name());
+        json.writeStringField("threadPoolKeyOverride", executionConfig.getThreadPoolKeyOverride());
+        json.writeBooleanField("requestCacheEnabled", executionConfig.isRequestCacheEnabled());
+        json.writeBooleanField("requestLogEnabled", executionConfig.isRequestLogEnabled());
+        json.writeBooleanField("timeoutEnabled", executionConfig.isTimeoutEnabled());
+        json.writeBooleanField("fallbackEnabled", executionConfig.isFallbackEnabled());
+        json.writeNumberField("timeoutInMilliseconds", executionConfig.getTimeoutInMilliseconds());
+        json.writeNumberField("semaphoreSize", executionConfig.getSemaphoreMaxConcurrentRequests());
+        json.writeNumberField("fallbackSemaphoreSize", executionConfig.getFallbackMaxConcurrentRequest());
+        json.writeBooleanField("threadInterruptOnTimeout", executionConfig.isThreadInterruptOnTimeout());
+        json.writeEndObject();
+        json.writeObjectFieldStart("metrics");
+        HystrixCommandConfiguration.HystrixCommandMetricsConfig metricsConfig = commandConfig.getMetricsConfig();
+        json.writeNumberField("healthBucketSizeInMs", metricsConfig.getHealthIntervalInMilliseconds());
+        json.writeNumberField("percentileBucketSizeInMilliseconds", metricsConfig.getRollingPercentileBucketSizeInMilliseconds());
+        json.writeNumberField("percentileBucketCount", metricsConfig.getRollingCounterNumberOfBuckets());
+        json.writeBooleanField("percentileEnabled", metricsConfig.isRollingPercentileEnabled());
+        json.writeNumberField("counterBucketSizeInMilliseconds", metricsConfig.getRollingCounterBucketSizeInMilliseconds());
+        json.writeNumberField("counterBucketCount", metricsConfig.getRollingCounterNumberOfBuckets());
+        json.writeEndObject();
+        json.writeObjectFieldStart("circuitBreaker");
+        HystrixCommandConfiguration.HystrixCommandCircuitBreakerConfig circuitBreakerConfig = commandConfig.getCircuitBreakerConfig();
+        json.writeBooleanField("enabled", circuitBreakerConfig.isEnabled());
+        json.writeBooleanField("isForcedOpen", circuitBreakerConfig.isForceOpen());
+        json.writeBooleanField("isForcedClosed", circuitBreakerConfig.isForceOpen());
+        json.writeNumberField("requestVolumeThreshold", circuitBreakerConfig.getRequestVolumeThreshold());
+        json.writeNumberField("errorPercentageThreshold", circuitBreakerConfig.getErrorThresholdPercentage());
+        json.writeNumberField("sleepInMilliseconds", circuitBreakerConfig.getSleepWindowInMilliseconds());
+        json.writeEndObject();
+        json.writeEndObject();
+    }

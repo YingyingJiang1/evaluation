@@ -1,0 +1,15 @@
+{"test_class": "redis.clients.jedis.ReliableTransactionTest", "is_compilable": "", "tests": 22, "failures": 22, "skipped": 0}
+{"test_class": "redis.clients.jedis.params.ZRangeParamsTest", "is_compilable": "", "tests": 10, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.params.BitPosParamsTest", "is_compilable": "", "tests": 10, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.params.XReadGroupParamsTest", "is_compilable": "", "tests": 10, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.params.FailoverParamsTest", "is_compilable": "", "tests": 10, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.params.XClaimParamsTest", "is_compilable": "", "tests": 10, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.JedisTest", "is_compilable": "", "tests": 100, "failures": 0, "skipped": 100}
+{"test_class": "redis.clients.jedis.JedisShardedPubSubBaseTest", "is_compilable": "", "tests": 2, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.ClientSetInfoConfigTest", "is_compilable": "", "tests": 0, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.JedisPubSubBaseTest", "is_compilable": "", "tests": 2, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.ConnectionTest", "is_compilable": "", "tests": 10, "failures": 8, "skipped": 0}
+{"test_class": "redis.clients.jedis.ProtocolTest", "is_compilable": "", "tests": 20, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.util.JedisURIHelperTest", "is_compilable": "", "tests": 22, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.util.ByteArrayComparatorTest", "is_compilable": "", "tests": 4, "failures": 0, "skipped": 0}
+{"test_class": "redis.clients.jedis.JedisSentinelPoolTest", "is_compilable": "", "tests": 14, "failures": 10, "skipped": 0}

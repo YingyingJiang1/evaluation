@@ -1,0 +1,6 @@
+Method,Aligned,Failure-Modification,Failure-No-Modification,Reversal,Success
+egsi,0.0,0.0,0.0,0.0,0.0
+codebuff,0.0,0.0,0.0,0.0,0.0
+deepseek-r1-0528--free,6.37,80.19,0.94,2.36,10.14
+gpt-4.1,0.0,0.0,0.0,0.0,0.0
+claude-3.7-sonnet,0.0,0.0,0.0,0.0,0.0

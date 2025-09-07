@@ -1,0 +1,7 @@
+    public boolean replace(K key, V oldValue, V newValue) {
+        if (oldValue == null || newValue == null) {
+            throw new NullPointerException();
+        }
+        int hash = hashOf(key);
+        return segmentFor(hash).replace(key, hash, oldValue, newValue);
+    }

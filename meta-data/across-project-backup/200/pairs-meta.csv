@@ -1,0 +1,3 @@
+project,pair_count,author_pairs_count,min_src_method_lines,avg_src_method_lines,median_method_lines,max_src_method_lines,avg_target_code_lines
+across-project,212,24,20,48.66,35.0,511,245.04166666666666
+ALL,212,24,20.0,48.66,35.0,511.0,245.04

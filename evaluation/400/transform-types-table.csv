@@ -1,0 +1,5 @@
+Method,Aligned,Failure,Reversal,Success
+egsi,4.06,75.4,1.13,19.41
+codebuff,5.2,87.78,0.0,7.01
+deepseek-r1-0528--free,4.97,87.13,0.23,7.67
+gpt-4.1,4.97,84.88,0.23,9.93

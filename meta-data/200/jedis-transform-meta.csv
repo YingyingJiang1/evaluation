@@ -1,0 +1,2 @@
+project,pair_count,author_pairs_count,min_src_method_lines,avg_src_method_lines,median_method_lines,max_src_method_lines,avg_target_code_lines
+jedis,244,40,5,10.55,7.0,76,183.25

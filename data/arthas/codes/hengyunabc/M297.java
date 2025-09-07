@@ -1,0 +1,7 @@
+    public boolean remove(Object key, Object value) {
+        int hash = hashOf(key);
+        if (value == null) {
+            return false;
+        }
+        return segmentFor(hash).remove(key, hash, value, false) != null;
+    }

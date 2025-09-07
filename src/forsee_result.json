@@ -1,0 +1,170 @@
+{
+    "task1": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-No-Modification"
+    },
+    "task2": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task3": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task4": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task5": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task6": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task7": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task8": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task9": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task10": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task11": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task12": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task13": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task14": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task15": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task16": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task17": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task18": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task19": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task20": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task21": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task22": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-No-Modification"
+    },
+    "task23": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task24": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task25": {
+        "egsi": "Failure-Modification",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Failure-Modification"
+    },
+    "task26": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Success",
+        "gpt-4.1": "Success"
+    },
+    "task27": {
+        "egsi": "Success",
+        "codebuff": "Failure-Modification",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    },
+    "task28": {
+        "egsi": "Success",
+        "codebuff": "Success",
+        "deepseek-r1-0528--free": "Failure-Modification",
+        "gpt-4.1": "Success"
+    }
+}

@@ -1,0 +1,6 @@
+  private void flushBuffer() throws IOException {
+    if (count > 0) {
+      out.write(buf, 0, count);
+      count = 0;
+    }
+  }

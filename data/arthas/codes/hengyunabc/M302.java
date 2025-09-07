@@ -1,0 +1,5 @@
+    @Override
+    public Set<K> keySet() {
+        Set<K> ks = keySet;
+        return ks != null? ks : (keySet = new KeySet());
+    }

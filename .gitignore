@@ -1,0 +1,5 @@
+projects*
+tmp-data/*
+src/lib/*
+src/logs
+docker/*
