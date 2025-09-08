@@ -6,6 +6,8 @@ from config import ProjectConfigs
 
 import json
 
+from eval import DataCache
+
 
 def update_pair_id(old_data:list[TransformPair], new_data:list[TransformPair]):
     old_dict = {}
@@ -85,12 +87,6 @@ def update_order(filepath):
     result_manager.update_all()
 
 
-new_pairs = []
-with open("/data1/jyy/style/evaluation/data/across-project/200/across-project-pairs.jsonl", "r", encoding="utf-8") as f:
-    for line in f:
-        if line.strip():                  # 跳过空行
-            new_pairs.append(TransformPair.from_dict(json.loads(line)))
-
 def sort_results_by_pair_id():
     dir = os.path.dirname(create_transformation_result_jsonl_path("", 200))
     for file in os.listdir(dir):
@@ -151,7 +147,7 @@ def fix_order_of_results():
         res_manager.update_all()
     pass
 
-sort_results_by_pair_id()
+
 # fix_model_results("/data1/jyy/style/evaluation/data/across-project/400/gpt-4.1-result.jsonl", 400)
 
             
@@ -198,9 +194,18 @@ sort_results_by_pair_id()
 #         if new_pair:
 #             new_manager.add_results([TransformReuslt(new_pair.project_name, new_pair.pair_id, new_pair.src_id, result.code)])
 
+def update_test_results(file, tested_file):
+    manager = ResultManager(file)
+    tested_manager = ResultManager(tested_file)
+    
+    for r in manager.get_all_results():
+        tested_r = tested_manager.get_result(r.project_name, r.pair_id)
+        r.compilable = tested_r.compilable
+        r.test_passed = tested_r.test_passed
+        
+    manager.update_all()
+
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python generate_name_map.py <num_tasks>")
-        sys.exit(1)
+    update_test_results( "../egsi-result.jsonl", "../data/across-project/200/egsi-result.jsonl")
 

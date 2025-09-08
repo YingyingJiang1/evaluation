@@ -220,6 +220,7 @@ class Tester:
         self.test_data_dir = os.path.join(TEST_DIR, "test-data")
         self.class_path = None
         self.original_execution_result = None
+        self.abs_project_path = os.path.abspath(self.project_config.repo_path)
         
     def get_pairs(self):
         id_map = AuthorIDMap()
@@ -429,6 +430,18 @@ class Tester:
 
 
 class GradleTester(Tester):
+    def test(self, methods, min_target_codes):
+        self.original_execution_result = self.get_execution_result(None, self.project_config.repo_path)
+        self.original_execution_result.is_compilable = True
+        print(f"original_execution_result: {self.original_execution_result}")
+        # 运行所有测试
+        for method in methods:
+            test_result = self.run_tests(method, min_target_codes)
+        
+        
+        # 输出所有method总的测试通过率
+
+
     def get_pair_group(self, pairs):
         groups = []  # 存放所有合法 group
 
@@ -475,10 +488,13 @@ class GradleTester(Tester):
                 lines[start_line - 1:end_line] = new_code.splitlines()
 
             # 写回修改后的文件
-            filepath = os.path.join(target_dir, filepath.replace(self.project_config.repo_path, ""))
+            reletive_path = filepath.replace(self.project_config.repo_path, "")
+            if reletive_path.startswith('/'):
+                reletive_path = reletive_path[1:]
+            filepath = os.path.join(target_dir, reletive_path)
             with open(filepath, "w", encoding="utf-8") as f:
                 f.writelines([line + "\n" for line in lines])
-                # print(f"Injected into {filepath}")
+                print(f"Injected into {filepath}")
         return backups
     
     def run_tests(self, transformation_method, min_target_codes) -> TestResult:
@@ -510,7 +526,7 @@ class GradleTester(Tester):
         self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
-            return
+            exit(0)
         new_execution_result = self.get_execution_result(ret, self.project_config.repo_path)
 
         if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
@@ -549,7 +565,7 @@ class GradleTester(Tester):
     def get_execution_result(self, ret:CompletedProcess, module_path) -> ExecutionResult:
         
         result = ExecutionResult()
-        result.is_compilable = ret.returncode == 0
+        result.is_compilable = ret and ret.returncode == 0
 
         # 测试报告路径: 多模块项目可能有多个模块
         test_report_dirs = []
@@ -592,12 +608,12 @@ class GradleTester(Tester):
 
 
 class GradleTesterInDocker(GradleTester):
-    def __init__(self, project_config: ProjectConfig, test_data_dir: str, max_worker):
+    def __init__(self, project_config: ProjectConfig, max_worker):
         super().__init__(project_config)
-        self.test_data_dir = test_data_dir
         self.workspace = "/workspace"
         self.exclude_args = ["-x", "runCheckstyle"]
         self.max_worker = max_worker
+        self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
 
     def _thread_wrapper(self, result_manager, group, data, original_execution_result):
         self._test_pair_group(result_manager, group, data, original_execution_result)
@@ -605,14 +621,15 @@ class GradleTesterInDocker(GradleTester):
         
     def _test_pair_group(self, result_manager, group, data, original_execution_result):
         volume_data_path = self.init_data()
-        
+                
         # 如果 group 为空，直接返回
         if not group:
             return
 
         # 一次性注入整个 group
-        backups = self._inject_to_src(result_manager, group, data, volume_data_path)
+        backups = self._inject_to_src(result_manager, group, data, os.path.dirname(volume_data_path))
         ret = self.execute_test(volume_data_path)
+        print(ret)
         self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
@@ -649,7 +666,7 @@ class GradleTesterInDocker(GradleTester):
         
         with ThreadPoolExecutor(max_workers=self.max_worker) as executor:
             futures = [
-                executor.submit(self._thread_wrapper, self, group, result_manager, data, original_execution_result)
+                executor.submit(self._thread_wrapper, result_manager,group,  data, original_execution_result)
                 for group in pair_groups
             ]
             
@@ -657,16 +674,17 @@ class GradleTesterInDocker(GradleTester):
                 print(f"线程完成，测试了 {future.result()} 个 pair")
         result_manager.update_all()
         
+        shutil.rmtree(self.project_test_data)
         
     def init_data(self):
         id = threading.get_ident()
          # 生成线程独立根目录
-        thread_root = os.path.join(self.test_data_dir, f"thread_{id}")
-        volume_data_path = os.path.join(thread_root , "app")
-        if os.path.exists(thread_root):
+        volume_data_path = os.path.join(self.project_test_data, f"thread_{id}", "app")
+        # volume_data_path = os.path.join(thread_root , "app")
+        if os.path.exists(volume_data_path):
             return volume_data_path
         
-        os.makedirs(volume_data_path, exist_ok=True)
+        # os.makedirs(volume_data_path, exist_ok=True)
          # 拷贝源码到 app 目录
         shutil.copytree(os.path.join(self.project_config.repo_path, 'app'), volume_data_path)
         return volume_data_path
@@ -680,13 +698,15 @@ class GradleTesterInDocker(GradleTester):
             cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_data_path}:{workspace}/app",
-            "-v", f"{os.path.join(self.project_config.repo_path, '.gradle')}:{workspace}/.gradle",
+            "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
+            "./gradlew", "testDebugUnitTest",
             *self.exclude_args
         ]
             print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
             ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            print(ret)
             return ret
         except Exception as e:
             print(f"运行测试出错: {e}")
@@ -695,16 +715,16 @@ class GradleTesterInDocker(GradleTester):
 if __name__ == "__main__":
     # 示例输入
     methods = [
-            "egsi",
-            "codebuff",
-            "deepseek-r1-0528--free",
+        "deepseek-r1-0528--free",
             "gpt-4.1",
+            "codebuff",
+            # "egsi",
             # "claude-3.7-sonnet"
         ]
     
     min_target_codes = 200
-    # tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
-    # tester.test(methods, min_target_codes)
-    
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 2)
+    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
     tester.test(methods, min_target_codes)
+    
+    # tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 1)
+    # tester.test(methods, min_target_codes)

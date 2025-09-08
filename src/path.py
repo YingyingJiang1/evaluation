@@ -7,7 +7,7 @@ machine = "local"
 
 ROOT = "/data1/jyy/style/evaluation"
 if machine == "local":
-    ROOT = r"C:\Users\dell\OneDrive\桌面\evaluation"
+    ROOT = r"C:\Users\dell\jyy\research\evaluation"
 
 FORSEE_DATASET_DIR = os.path.join(ROOT, "src/lib/Forsee/dataset")
 FORSEE_CACHES = os.path.join(ROOT, "src/lib/Forsee/caches")
