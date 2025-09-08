@@ -488,6 +488,7 @@ class GradleTester(Tester):
         original_execution_result = self.original_execution_result
         
         for group in pair_groups:
+            group = [p for p in group if result_manager.get_result_by_id(p.pair_id).test_passed == ""] # 获取未测试的pair
             self._validate_group(result_manager, group, data, original_execution_result)
                     
             result_manager.update_all()
@@ -578,7 +579,7 @@ class GradleTester(Tester):
 if __name__ == "__main__":
     # 示例输入
     methods = [
-            # "egsi",
+            "egsi",
             "codebuff",
             "deepseek-r1-0528--free",
             "gpt-4.1",
