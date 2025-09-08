@@ -718,7 +718,7 @@ if __name__ == "__main__":
         "deepseek-r1-0528--free",
             "gpt-4.1",
             "codebuff",
-            # "egsi",
+            "egsi",
             # "claude-3.7-sonnet"
         ]
     
