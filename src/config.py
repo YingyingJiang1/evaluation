@@ -5,7 +5,7 @@ TOP_PERCENT_AUTHOR = 0.25
 
 class ProjectConfig:
     def __init__(self, name, repo_path, file_tag_output_csv, method_tag_output_csv,
-                 allowed_suffix='.java', include_dirs=[],top_percent=TOP_PERCENT_AUTHOR, build_tool="gradle", jars= []):
+                 allowed_suffix='.java', include_dirs=[],top_percent=TOP_PERCENT_AUTHOR, build_tool="gradle", jars= [], modules=[]):
         self.name = name
         self.repo_path = repo_path
         self.file_tag_output_csv = file_tag_output_csv
@@ -15,6 +15,7 @@ class ProjectConfig:
         self.include_dirs = include_dirs
         self.build_tool = build_tool
         self.jars = ";".join([os.path.join(repo_path, reletive_jar) for reletive_jar in jars])
+        self.modules = modules
         
         self._populate_include_dirs()
         # print(self.include_dirs)
@@ -42,7 +43,8 @@ class ProjectConfig:
             include_dirs=config_dict.get('include_dirs', []),
             top_percent=config_dict.get('top_percent', TOP_PERCENT_AUTHOR),
             build_tool=config_dict.get('build_tool', "maven"),
-            jars=config_dict.get('jars', [])
+            jars=config_dict.get('jars', []),
+            modules=config_dict.get('modules', [])
         )
 
 

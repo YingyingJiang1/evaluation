@@ -1,12 +1,15 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 from typing import List
 from dataclasses import dataclass, asdict
 import subprocess
+from subprocess import CompletedProcess
 import os
 import xml.etree.ElementTree as ET
 import re
 import shutil
 
-from dataset import Data, MethodWrapper
+from dataset import Data, MethodWrapper, TransformPair
 import subprocess
 import json
 from typing import List
@@ -445,7 +448,7 @@ class GradleTester(Tester):
         
         return groups
     
-    def _inject_to_src(self, result_manager:ResultManager, pairs, data:Data):
+    def _inject_to_src(self, result_manager:ResultManager, pairs, data:Data, target_dir):
         backups = {} # key:filepath, value:code
         file_to_methods: dict[str, list] = {}  # key: filepath, value: list of (start_line, end_line, new_code)
 
@@ -472,6 +475,7 @@ class GradleTester(Tester):
                 lines[start_line - 1:end_line] = new_code.splitlines()
 
             # 写回修改后的文件
+            filepath = os.path.join(target_dir, filepath.replace(self.project_config.repo_path, ""))
             with open(filepath, "w", encoding="utf-8") as f:
                 f.writelines([line + "\n" for line in lines])
                 # print(f"Injected into {filepath}")
@@ -489,19 +493,25 @@ class GradleTester(Tester):
         
         for group in pair_groups:
             group = [p for p in group if result_manager.get_result_by_id(p.pair_id).test_passed == ""] # 获取未测试的pair
-            self._validate_group(result_manager, group, data, original_execution_result)
+            self._test_pair_group(result_manager, group, data, original_execution_result)
                     
             result_manager.update_all()
                 
-    def _validate_group(self, result_manager, group, data, original_execution_result):
+    
+                
+    def _test_pair_group(self, result_manager, group, data, original_execution_result):
         # 如果 group 为空，直接返回
         if not group:
             return
 
         # 一次性注入整个 group
-        backups = self._inject_to_src(result_manager, group, data)
-        new_execution_result = self.get_execution_result()
+        backups = self._inject_to_src(result_manager, group, data, self.project_config.repo_path)
+        ret = self.execute_test()
         self.reset(backups)
+        if ret is None:
+            print("无法执行测试，检查！")
+            return
+        new_execution_result = self.get_execution_result(ret, self.project_config.repo_path)
 
         if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
             # 整个 group 都成功
@@ -518,56 +528,60 @@ class GradleTester(Tester):
             else:
                 # 把 group 拆成两半，递归检测
                 mid = len(group) // 2
-                self._validate_group(result_manager, group[:mid], data, original_execution_result)
-                self._validate_group(result_manager, group[mid:], data, original_execution_result)
-    
-    def get_execution_result(self) -> ExecutionResult:
-        
-        cmd = [f"{os.path.join(os.path.abspath(self.project_config.repo_path), 'gradlew.bat')}", "test", "--no-daemon", "--rerun-tasks", 
+                self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
+                self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+                
+    def execute_test(self) -> CompletedProcess:
+        try:
+            cmd = [f"{os.path.join(os.path.abspath(self.project_config.repo_path), 'gradlew.bat')}", "test", "--no-daemon", "--rerun-tasks", 
                "-x", "compileTestJava",
                "-x", "spotlessJavaApply",
                "-x", "spotlessCheck"
-               ]
-
-        try:
+            ]
             print(f"run: {' '.join(cmd)}")
             ret = subprocess.run(cmd, cwd=os.path.abspath(self.project_config.repo_path), capture_output=True, text=True)
             # print(ret)
-        
-            result = ExecutionResult()
-            result.is_compilable = ret.returncode == 0
-
-            # 测试报告路径: 多模块项目可能有多个模块
-            test_report_dirs = []
-            for root, dirs, files in os.walk(self.project_config.repo_path):
-                if os.path.basename(root) == "test-results" and "test" in dirs:
-                    test_report_dirs.append(os.path.join(root, "test"))
-
-            # 遍历每个模块的测试报告
-            for report_dir in test_report_dirs:
-                for file in os.listdir(report_dir):
-                    if not file.endswith(".xml"):
-                        continue
-                    file_path = os.path.join(report_dir, file)
-                    try:
-                        tree = ET.parse(file_path)
-                        root = tree.getroot()
-                        # <testsuite> 元素包含测试统计
-                        tests = int(root.attrib.get("tests", 0))
-                        failures = int(root.attrib.get("failures", 0))
-                        errors = int(root.attrib.get("errors", 0))
-                        skipped = int(root.attrib.get("skipped", 0))
-
-                        result.tests += tests
-                        result.failures += failures + errors
-                        result.skipped += skipped
-                    except Exception as e:
-                        print(f"解析 {file_path} 出错: {e}")
-                        result.is_compilable = "no"
-            return result
+            return ret
         except Exception as e:
             print(f"运行测试出错: {e}")
             return None
+    
+    def get_execution_result(self, ret:CompletedProcess, module_path) -> ExecutionResult:
+        
+        result = ExecutionResult()
+        result.is_compilable = ret.returncode == 0
+
+        # 测试报告路径: 多模块项目可能有多个模块
+        test_report_dirs = []
+        for root, dirs, files in os.walk(module_path):
+            if os.path.basename(root) == "test-results":
+                if "test" in dirs:
+                    test_report_dirs.append(os.path.join(root, "test"))
+                elif "testDebugUnitTest" in dirs:
+                    test_report_dirs.append(os.path.join(root, "testDebugUnitTest"))
+
+        # 遍历每个模块的测试报告
+        for report_dir in test_report_dirs:
+            for file in os.listdir(report_dir):
+                if not file.endswith(".xml"):
+                    continue
+                file_path = os.path.join(report_dir, file)
+                try:
+                    tree = ET.parse(file_path)
+                    root = tree.getroot()
+                    # <testsuite> 元素包含测试统计
+                    tests = int(root.attrib.get("tests", 0))
+                    failures = int(root.attrib.get("failures", 0))
+                    errors = int(root.attrib.get("errors", 0))
+                    skipped = int(root.attrib.get("skipped", 0))
+
+                    result.tests += tests
+                    result.failures += failures + errors
+                    result.skipped += skipped
+                except Exception as e:
+                    print(f"解析 {file_path} 出错: {e}")
+                    result.is_compilable = "no"
+        return result
         
         
     def reset(self, backups):
@@ -575,6 +589,108 @@ class GradleTester(Tester):
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(code)
             # print(f"Reset {filepath}!")
+
+
+class GradleTesterInDocker(GradleTester):
+    def __init__(self, project_config: ProjectConfig, test_data_dir: str, max_worker):
+        super().__init__(project_config)
+        self.test_data_dir = test_data_dir
+        self.workspace = "/workspace"
+        self.exclude_args = ["-x", "runCheckstyle"]
+        self.max_worker = max_worker
+
+    def _thread_wrapper(self, result_manager, group, data, original_execution_result):
+        self._test_pair_group(result_manager, group, data, original_execution_result)
+        result_manager.update_all()
+        
+    def _test_pair_group(self, result_manager, group, data, original_execution_result):
+        volume_data_path = self.init_data()
+        
+        # 如果 group 为空，直接返回
+        if not group:
+            return
+
+        # 一次性注入整个 group
+        backups = self._inject_to_src(result_manager, group, data, volume_data_path)
+        ret = self.execute_test(volume_data_path)
+        self.reset(backups)
+        if ret is None:
+            print("无法执行测试，检查！")
+            return
+        new_execution_result = self.get_execution_result(ret, volume_data_path)
+
+        if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
+            # 整个 group 都成功
+            for pair in group:
+                r = result_manager.get_result_by_id(pair.pair_id)
+                r.compilable = True
+                r.test_passed = True
+        else:
+            if len(group) == 1:
+                # 缩小到单个 pair，直接标记失败
+                r = result_manager.get_result_by_id(group[0].pair_id)
+                r.compilable = False
+                r.test_passed = False
+            else:
+                # 把 group 拆成两半，递归检测
+                mid = len(group) // 2
+                self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
+                self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+        
+    def run_tests(self, transformation_method, min_target_codes) -> TestResult:
+        pair_groups = self.get_pair_group(self.get_pairs())
+        # for group in pair_groups:
+        #     print(f"group: {[pair.src_id for pair in group]}")        
+        
+        result_manager = ResultManager(create_transformation_result_jsonl_path(transformation_method, min_target_codes))
+        data = Data(self.project_config)
+        
+        original_execution_result = self.original_execution_result
+        
+        with ThreadPoolExecutor(max_workers=self.max_worker) as executor:
+            futures = [
+                executor.submit(self._thread_wrapper, self, group, result_manager, data, original_execution_result)
+                for group in pair_groups
+            ]
+            
+            for future in as_completed(futures):
+                print(f"线程完成，测试了 {future.result()} 个 pair")
+        result_manager.update_all()
+        
+        
+    def init_data(self):
+        id = threading.get_ident()
+         # 生成线程独立根目录
+        thread_root = os.path.join(self.test_data_dir, f"thread_{id}")
+        volume_data_path = os.path.join(thread_root , "app")
+        if os.path.exists(thread_root):
+            return volume_data_path
+        
+        os.makedirs(volume_data_path, exist_ok=True)
+         # 拷贝源码到 app 目录
+        shutil.copytree(os.path.join(self.project_config.repo_path, 'app'), volume_data_path)
+        return volume_data_path
+        
+        
+        
+    def execute_test(self, volume_data_path) -> CompletedProcess:
+        try:
+            id = threading.get_ident()
+            workspace = self.workspace
+            cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{volume_data_path}:{workspace}/app",
+            "-v", f"{os.path.join(self.project_config.repo_path, '.gradle')}:{workspace}/.gradle",
+            "-w", workspace,
+            f"{self.project_config.name.lower()}-image",
+            *self.exclude_args
+        ]
+            print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
+            ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            return ret
+        except Exception as e:
+            print(f"运行测试出错: {e}")
+            return None
 
 if __name__ == "__main__":
     # 示例输入
@@ -587,5 +703,8 @@ if __name__ == "__main__":
         ]
     
     min_target_codes = 200
-    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
+    # tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
+    # tester.test(methods, min_target_codes)
+    
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 2)
     tester.test(methods, min_target_codes)
