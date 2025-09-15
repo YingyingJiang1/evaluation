@@ -9,7 +9,7 @@ import random
 from codebleu import calc_codebleu
 from upsetplot import UpSet, from_contents
 from itertools import product
-import plotly.graph_objects as go
+# import plotly.graph_objects as go
 
 
 from transform import ResultManager, TransformReuslt
@@ -338,15 +338,15 @@ def questionnaire_filter(methods, min_target_codes, project_names):
     
     eval_result_map = {method:EvalResults(method, min_target_codes, True) for method in methods}
     
-    stats = {}
-    running_stat = EgsiRunningStat()
-    dir = os.path.join(TMP_DATA, "run-statistic")
-    for file in os.listdir(dir):
-        running_stat.add_from(os.path.join(dir, file))
+    # running_stat = EgsiRunningStat()
+    # dir = os.path.join(TMP_DATA, "run-statistic")
+    # for file in os.listdir(dir):
+    #     running_stat.add_from(os.path.join(dir, file))
         
     codebuff_resulst = ResultManager(create_transformation_result_jsonl_path("codebuff", min_target_codes))
     
     # 筛选任务：仅包含success和failure-modification类型的结果，并且至少有一个success结果
+    stats = {}
     pairs = []
     for key in pair_dict:
         project_name, pair_id = key
@@ -663,6 +663,17 @@ methods = [
             # "claude-3.7-sonnet"
         ]
 
+def get_test_failed_pairs(min_target_lines, project_names, method):
+    pair_dict = create_pair_dict(min_target_codes, project_names)
+    result_manager = ResultManager(create_transformation_result_jsonl_path(method, min_target_lines))
+    
+    new_pair_dict = {}
+    for key in pair_dict:
+        p = pair_dict[key]
+        r = result_manager.get_result(p.project_name, p.pair_id)
+        if r.test_passed != "" and not r.test_passed:
+            new_pair_dict[key] = p
+    return new_pair_dict
 
 min_target_codes = 200
 project_names = ["across-project"]
@@ -670,11 +681,12 @@ project_names = ["across-project"]
 output_dir = os.path.join(TMP_DATA, "analysis")
 pair_dict = create_pair_dict(min_target_codes, project_names)
 pair_dict = questionnaire_filter(methods, min_target_codes, project_names)
+pair_dict = get_test_failed_pairs(min_target_codes, project_names, "egsi")
 
 # style_trigger_analysis("egsi", min_target_codes, False)
-# save_code(methods, min_target_codes, project_names, output_dir, pair_dict, lambda x:True)
+save_code(methods, min_target_codes, project_names, output_dir, pair_dict, lambda x:True)
 
 # get_forsee_label("task_mapping.json", project_names, methods, min_target_codes, "forsee_result.json")
 
 # draw_success_matrix(methods, min_target_codes)
-questionnaire_sample(methods,project_names,  min_target_codes, 2, "../tmp-data/code-materials")
+# questionnaire_sample(methods,project_names,  min_target_codes, 2, "../tmp-data/code-materials")

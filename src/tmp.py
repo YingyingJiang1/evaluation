@@ -2,7 +2,7 @@ from transform import ResultManager, TransformReuslt
 from dataset import TransformationData, Data, TransformPair
 from utils import *
 from config import ProjectConfigs
-
+import re
 
 import json
 
@@ -194,18 +194,44 @@ def fix_order_of_results():
 #         if new_pair:
 #             new_manager.add_results([TransformReuslt(new_pair.project_name, new_pair.pair_id, new_pair.src_id, result.code)])
 
-def update_test_results(file, tested_file):
+def update_test_results(min_target_lines, method="egsi"):
+    file = create_transformation_result_jsonl_path(method, min_target_lines)
+    tested_file = file.replace(".jsonl", "-old.jsonl")
     manager = ResultManager(file)
     tested_manager = ResultManager(tested_file)
     
+    print(tested_file)
+    
     for r in manager.get_all_results():
         tested_r = tested_manager.get_result(r.project_name, r.pair_id)
-        r.compilable = tested_r.compilable
-        r.test_passed = tested_r.test_passed
-        
+        # 结果相同，同步测试结果
+        if tested_r and r.code == tested_r.code:
+            r.compilable = tested_r.compilable
+            r.test_passed = tested_r.test_passed
+            
     manager.update_all()
-
+    
+    
+def print_failed_tests(min_target_lines, method="egsi"):
+    file = create_transformation_result_jsonl_path(method, min_target_lines)
+    manager = ResultManager(file)
+    failed = []
+    for r in manager.get_all_results():
+        if r.test_passed != "" and not r.test_passed:
+            failed.append(r.pair_id)
+    print(f"{method}:{failed}")
 
 if __name__ == "__main__":
-    update_test_results( "../egsi-result.jsonl", "../data/across-project/200/egsi-result.jsonl")
+    
+    methods = [
+            "egsi",
+            "codebuff",
+            "deepseek-r1-0528--free",
+            "gpt-4.1",
+            # "claude-3.7-sonnet"
+        ]
+    update_test_results(200)
+    
+    for m in methods:
+        print_failed_tests(200, m)
 

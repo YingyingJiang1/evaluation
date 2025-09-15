@@ -431,6 +431,7 @@ class Tester:
 
 class GradleTester(Tester):
     def test(self, methods, min_target_codes):
+        print(f"Testing {self.project_config.name}...")
         self.original_execution_result = self.get_execution_result(None, self.project_config.repo_path)
         self.original_execution_result.is_compilable = True
         print(f"original_execution_result: {self.original_execution_result}")
@@ -471,33 +472,44 @@ class GradleTester(Tester):
             filepath = m.get_filepath()
             start_line, end_line = m.get_line_range()
             new_code = result_manager.get_result_by_id(p.pair_id).code
-
             file_to_methods.setdefault(filepath, []).append((start_line, end_line, new_code))
 
         # 对每个文件一次性处理
         for filepath, methods in file_to_methods.items():
+            # print(f"Processing {filepath}")
             # 读取原文件并备份
             with open(filepath, "r", encoding="utf-8") as f:
-                original_code = f.read()
-            backups[filepath] = original_code
-
-            lines = original_code.splitlines()
-
-            # 按 start_line 倒序替换，避免修改影响后续方法
-            for start_line, end_line, new_code in sorted(methods, key=lambda x: x[0], reverse=True):
-                lines[start_line - 1:end_line] = new_code.splitlines()
-
-            # 写回修改后的文件
+                original_lines = f.readlines()
+            
+            # 更新文件路径
             reletive_path = filepath.replace(self.project_config.repo_path, "")
             if reletive_path.startswith('/'):
                 reletive_path = reletive_path[1:]
             filepath = os.path.join(target_dir, reletive_path)
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.writelines([line + "\n" for line in lines])
-                print(f"Injected into {filepath}")
+            
+            backups[filepath] = original_lines
+
+            methods = sorted(methods, key=lambda x: x[0])  # 按 start_line 升序
+            new_lines = []
+            cursor = 0
+
+            for start, end, new_code in methods:
+                s_idx, e_idx = start - 1, end
+                new_lines.extend(original_lines[cursor:s_idx])
+                new_lines.extend(new_code.splitlines(keepends=True))
+                cursor = e_idx
+            new_lines.extend(original_lines[cursor:])
+
+            # 写回修改后的文件
+            with open(filepath, "w", encoding="utf-8", newline="\n") as f:
+                f.writelines(new_lines)
+                f.flush()
+            # print(f"Injected into {filepath}")
+            # input("Enter to continue...")
         return backups
     
     def run_tests(self, transformation_method, min_target_codes) -> TestResult:
+        print(f"Running tests for {transformation_method}")
         pair_groups = self.get_pair_group(self.get_pairs())
         # for group in pair_groups:
         #     print(f"group: {[pair.src_id for pair in group]}")        
@@ -601,10 +613,12 @@ class GradleTester(Tester):
         
         
     def reset(self, backups):
-        for filepath, code in backups.items():
+        for filepath, code_lines in backups.items():
             with open(filepath, "w", encoding="utf-8") as f:
-                f.write(code)
+                f.writelines(code_lines)
+                f.flush()
             # print(f"Reset {filepath}!")
+            # input("Enter to continue...")
 
 
 class GradleTesterInDocker(GradleTester):
@@ -655,6 +669,7 @@ class GradleTesterInDocker(GradleTester):
                 self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
         
     def run_tests(self, transformation_method, min_target_codes) -> TestResult:
+        print(f"Test {transformation_method}: {len(self.get_pairs())} pairs")
         pair_groups = self.get_pair_group(self.get_pairs())
         # for group in pair_groups:
         #     print(f"group: {[pair.src_id for pair in group]}")        
@@ -664,17 +679,15 @@ class GradleTesterInDocker(GradleTester):
         
         original_execution_result = self.original_execution_result
         
-        with ThreadPoolExecutor(max_workers=self.max_worker) as executor:
-            futures = [
-                executor.submit(self._thread_wrapper, result_manager,group,  data, original_execution_result)
-                for group in pair_groups
-            ]
-            
-            for future in as_completed(futures):
-                print(f"线程完成，测试了 {future.result()} 个 pair")
-        result_manager.update_all()
+        untested_groups = [[p for p in group if result_manager.get_result_by_id(p.pair_id) and result_manager.get_result_by_id(p.pair_id).test_passed == ""] for group in pair_groups]      
+        if untested_groups:  
+            with ThreadPoolExecutor(max_workers=self.max_worker) as executor:
+                for group in untested_groups:   
+                    executor.submit(self._thread_wrapper, result_manager,group,  data, original_execution_result)
+                
+            result_manager.update_all()
         
-        shutil.rmtree(self.project_test_data)
+            shutil.rmtree(self.project_test_data)
         
     def init_data(self):
         id = threading.get_ident()
@@ -698,7 +711,7 @@ class GradleTesterInDocker(GradleTester):
             cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_data_path}:{workspace}/app",
-            "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
+            # "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
             "./gradlew", "testDebugUnitTest",
@@ -706,7 +719,7 @@ class GradleTesterInDocker(GradleTester):
         ]
             print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
             ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-            print(ret)
+            # print(ret)
             return ret
         except Exception as e:
             print(f"运行测试出错: {e}")
@@ -715,16 +728,16 @@ class GradleTesterInDocker(GradleTester):
 if __name__ == "__main__":
     # 示例输入
     methods = [
-        "deepseek-r1-0528--free",
-            "gpt-4.1",
-            "codebuff",
+        # "deepseek-r1-0528--free",
+        #     "gpt-4.1",
+        #     "codebuff",
             "egsi",
             # "claude-3.7-sonnet"
         ]
     
     min_target_codes = 200
-    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
-    tester.test(methods, min_target_codes)
-    
-    # tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 1)
+    # tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
     # tester.test(methods, min_target_codes)
+    
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 3)
+    tester.test(methods, min_target_codes)
