@@ -736,8 +736,8 @@ if __name__ == "__main__":
         ]
     
     min_target_codes = 200
-    # tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
-    # tester.test(methods, min_target_codes)
+    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
+    tester.test(methods, min_target_codes)
     
     tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 3)
     tester.test(methods, min_target_codes)
