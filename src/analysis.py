@@ -1,3 +1,4 @@
+import math
 import os
 import shutil
 import json
@@ -9,7 +10,7 @@ import random
 from codebleu import calc_codebleu
 from upsetplot import UpSet, from_contents
 from itertools import product
-# import plotly.graph_objects as go
+import plotly.graph_objects as go
 
 
 from transform import ResultManager, TransformReuslt
@@ -56,16 +57,24 @@ def save_code(methods, min_target_codes, project_names,
     classification_results_map = {}
     
     target_map = {
-        "A1": ["M873","M925", "M1346"],
-        "A133": ["M186","M1359"],
-        "A138": ["M504","M536", "M852"],
-        "A233": ["M516","M623", "M543"],
-        "A248": ["M359","M367"],
-        "A305": ["M383","M328", "M372"],
-        "A328": ["M817","M1066", "M1117"],
-        "A461": ["M1384","M1619"],
-        "A591": ["M149","M163", "M185"],
+        # "A1-M52M1201M1346M925M873M1349": ["M873","M925", "M1346"],
+        # "A133-M1359M186M124": ["M186","M1359"],
+        # "A133-M87M729M786":["M786", "M87"],
+        # "A138-M539M1118M504M852M519M536": ["M504","M536", "M852"],
+        # "A138-M1497M1118M512M852M519M536": ["M512","M536", "M852", "M1118", "M519"],
+        # "A233-M33M608M516M543": ["M33","M516", "M608"],
+        # "A233-M153M623M516M543": ["M516","M623", "M543"],
+        # "A233-M426M27M516M583": ["M27","M426", "M516", "M583"],
+        # "A233-M454M27M38M635":["M27","M38","M635"],
+        # "A248-M570M359M362": ["M359","M367"],
+        # "A305-M217M383M257M328M372":["M217","M383","M257","M328", "M372"],
+        # "A305-M452M383M257M328M372":["M452","M383","M257","M328", "M372"],
+        # "A328-M817M1117M1066M1099": ["M1099","M1066", "M1117"],
+        # "A461": ["M1384","M1619"],
+        # "A591": ["M149","M163", "M185"],
     }
+    
+    style_dir_map = {}
 
     random.seed(42)
     for method in methods:
@@ -83,19 +92,25 @@ def save_code(methods, min_target_codes, project_names,
                 
                 pair =  pair_dict[(r.project_name, r.pair_id)]
                 src_author, target_author, src_id =pair.src_author, pair.target_author, pair.src_id
+                target_ids = pair.target_ids
+                style_value = target_author + target_ids.__str__()
+                if style_value not in style_dir_map:
+                    style_dir_map[style_value] = f"style{len(style_dir_map)}"
+                pair_dir = os.path.join(output_dir, r.project_name, f"{target_author}-{''.join(target_ids)}")
+                                        
                 # write transformation code and original src file
-                src_codes_dir = os.path.join(output_dir, r.project_name, target_author,"", src_author, src_id)
+                src_codes_dir = os.path.join(pair_dir, src_author, src_id)
                 os.makedirs(src_codes_dir, exist_ok=True)
                 code = transform_results.get_result(r.project_name, r.pair_id).code
                 if not code:
                     code = DataCache.get_code_list(r.project_name, src_author, [src_id])[0]
                 dir = os.path.join(src_codes_dir,  r.transform_type)
                 # os.makedirs(dir, exist_ok=True)
-                result_file_name = anonymous_methods[method]
+                result_file_name = method
                 with open(os.path.join(src_codes_dir, f"{result_file_name}.java"), 'w') as f:
                     f.write(code)
                 original_src_code = DataCache.get_code_list(r.project_name, src_author, [src_id])[0]
-                src_filename = "A"
+                src_filename = "original_src"
                 with open(os.path.join(src_codes_dir, f"{src_filename}.java"), 'w') as f:
                     f.write(original_src_code)
 
@@ -106,8 +121,17 @@ def save_code(methods, min_target_codes, project_names,
                     classification_results_map[r.project_name] = classifier_reuslts
                 src_ids = pair_dict[(r.project_name, r.pair_id)].target_ids
                 
+                style_codes_dir = os.path.join(pair_dir,"style-codes")
+                if not os.path.exists(style_codes_dir):
+                    os.makedirs(style_codes_dir, exist_ok=True)
+                    code_list = DataCache.get_code_list(r.project_name, target_author, src_ids)
+                    for i in range(len(src_ids)):
+                        with open(os.path.join(style_codes_dir, f"{src_ids[i]}.java"), 'w') as f:
+                            f.write(code_list[i])
                 
-                src_ids = target_map[target_author]
+                key = f"{target_author}-{''.join(target_ids)}"
+                if key in target_map :
+                    src_ids = target_map[key] 
                 target_path = os.path.join(src_codes_dir, "Target.java")
                 if not os.path.exists(target_path):
                     for id in src_ids:
@@ -116,13 +140,7 @@ def save_code(methods, min_target_codes, project_names,
                             f.write(code_list[0])
                             f.write("\n\n")
                 
-                style_codes_dir = os.path.join(output_dir, r.project_name, target_author,"style-codes")
-                if not os.path.exists(style_codes_dir):
-                    os.makedirs(style_codes_dir, exist_ok=True)
-                    code_list = DataCache.get_code_list(r.project_name, target_author, src_ids)
-                    for i in range(len(src_ids)):
-                        with open(os.path.join(style_codes_dir, f"{src_ids[i]}.java"), 'w') as f:
-                            f.write(code_list[i])
+                
                             
         stats[method]["lines_median"] = np.median(stats[method]["lines_median"])
     stats["total_task"] = len(pair_dict)
@@ -332,21 +350,22 @@ def style_trigger_analysis(method, min_target_lines, across_project_flag):
     )
 
 # Get task which has only success-type or failure-modification-type results
-def questionnaire_filter(methods, min_target_codes, project_names):
+def questionnaire_filter(methods, min_target_codes, project_names, line_range):
     pair_dict = create_pair_dict(min_target_codes, project_names)
     
     
     eval_result_map = {method:EvalResults(method, min_target_codes, True) for method in methods}
     
-    # running_stat = EgsiRunningStat()
-    # dir = os.path.join(TMP_DATA, "run-statistic")
-    # for file in os.listdir(dir):
-    #     running_stat.add_from(os.path.join(dir, file))
+    stats = {}
+    running_stat = EgsiRunningStat()
+    dir = os.path.join(TMP_DATA, "run-statistic")
+    for file in os.listdir(dir):
+        running_stat.add_from(os.path.join(dir, file))
         
     codebuff_resulst = ResultManager(create_transformation_result_jsonl_path("codebuff", min_target_codes))
+    min_line, max_line = line_range
     
     # 筛选任务：仅包含success和failure-modification类型的结果，并且至少有一个success结果
-    stats = {}
     pairs = []
     for key in pair_dict:
         project_name, pair_id = key
@@ -368,12 +387,15 @@ def questionnaire_filter(methods, min_target_codes, project_names):
                 stats[key]["failure_modification_count"] += 1
         
         success_count, failure_modification_count = stats[key]["success_count"], stats[key]["failure_modification_count"]
-        if stats[key]["src_lines"] > 50 or success_count + failure_modification_count != len(methods):
+        if stats[key]["src_lines"] > max_line or stats[key]["src_lines"] < min_line  or success_count + failure_modification_count != len(methods):
+            continue
+        
+        if success_count < 1:
             continue
         
         pairs.append(pair_dict[key])
         
-    new_pair_dict = {}
+    # print(len(pairs))
         
     # 取20%的数据
     # pairs = sorted(pairs, key = lambda pair: running_stat.get_executed_op_types(pair.src_author, pair.target_author, pair.src_id), reverse=True)[0:int(len(pairs) * 0.2)]
@@ -387,19 +409,40 @@ def questionnaire_filter(methods, min_target_codes, project_names):
         if style_combinations not in style_combinations_map:
             style_combinations_map[style_combinations] = []
         style_combinations_map[style_combinations].append(p)
-    
+
+    # 按照各种风格组合包含的pair的比值采样
+    total_pairs = sum(len(pairs) for pairs in style_combinations_map.values())
+    sample_total = len(pairs)
+    new_pair_dict = {}
+    random.seed(42)
     for style_combinations, pairs in style_combinations_map.items():
-        # pair_keys = sorted(pair_keys, key = lambda pair_key: stats[pair_key]["success_count"] * -10000 + stats[pair_key]["src_lines"])
-        pairs = sorted(pairs, key = lambda pair: running_stat.get_executed_op_types(pair.src_author, pair.target_author, pair.src_id), reverse=True)
-        p = pairs[0]
-        key = (p.project_name, p.pair_id)
-        new_pair_dict[key] = p
+        # 按 pair_id 排序
+        pairs = sorted(pairs, key=lambda pair: int(pair.pair_id))
+
+        # 按数量占比计算该 style_combinations 的采样数量
+        proportion = len(pairs) / total_pairs
+        n_sample = max(1, round(proportion * sample_total))
+
+        # 随机采样 n_sample 个
+        sampled_pairs = random.sample(pairs, min(n_sample, len(pairs)))
+
+        for p in sampled_pairs:
+            key = (p.project_name, p.pair_id)
+            new_pair_dict[key] = p
+    
+    # 按照egsi执行的转换操作次数排序后，等数量采样
+    # for style_combinations, pairs in style_combinations_map.items():
+    #     # pair_keys = sorted(pair_keys, key = lambda pair_key: stats[pair_key]["success_count"] * -10000 + stats[pair_key]["src_lines"])
+    #     pairs = sorted(pairs, key = lambda pair: running_stat.get_executed_op_types(pair.src_author, pair.target_author, pair.src_id), reverse=True)
+    #     p = pairs[0]
+    #     key = (p.project_name, p.pair_id)
+    #     new_pair_dict[key] = p
         
     src_set = set()
     for p in new_pair_dict.values():
         src_set.add((p.src_author, p.src_id))
     print(f"different src files:{len(src_set)}")
-    print(f"style combinations:{len(style_combinations)}")
+    print(f"style combinations:{len(style_combinations_map)}")
     print(f"total task: {len(new_pair_dict)}")
     
     return new_pair_dict
@@ -431,22 +474,17 @@ def get_forsee_label(filepath, project_names, methods,min_target_lines, output_p
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(result_map, f, ensure_ascii=False, indent=4)  # indent=4 使文件更易读
         
-        
-        
+
 def draw_success_matrix(methods, min_target_lines):
     success_distribution = {}
     all_pairs = set()
-
     for m in methods:
         results = EvalResults(m, min_target_lines, True)
-        all_pairs.update([r.pair_id for r in results.results])
         success_distribution[m] = set()
 
         for r in results.get_successes():
+            all_pairs.add(r.pair_id)
             success_distribution[m].add(r.pair_id)
-
-    keys = list(success_distribution.keys())
-    pairs = sorted(all_pairs)
 
 
     methods = list(success_distribution.keys())
@@ -539,6 +577,7 @@ def draw_success_matrix(methods, min_target_lines):
 
     fig.write_html("success_diff.html", full_html=True)
     
+    print(f"total pairs: {len(all_pairs)}")
     print("Intersection ID -> pair_id list")
     for idx, pairs in intersection_contents.items():
         print(f"{idx}: {pairs}")
@@ -600,10 +639,7 @@ def save_code_by_pair(methods, min_target_lines, pair_dict, output_dir):
                 code = original_src_code  
             with open(os.path.join(dir, f"{method}.java"), 'w') as f:
                 f.write(code)
-                
-                
-                
-                            
+
 
 def questionnaire_sample(methods, project_names, min_target_lines, n, output_dir):
     success_distribution = {}
@@ -663,25 +699,44 @@ methods = [
             # "claude-3.7-sonnet"
         ]
 
-def get_test_failed_pairs(min_target_lines, project_names, method):
-    pair_dict = create_pair_dict(min_target_codes, project_names)
-    result_manager = ResultManager(create_transformation_result_jsonl_path(method, min_target_lines))
+
+def print_statistic(methods, tasks_file, pair_dict, min_target_code_lines):
+    # 总的任务数量
+    with open(tasks_file, 'r', encoding='utf-8') as f:
+        tasks = [json.loads(line) for line in f]
+    task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
+    print(f"Total tasks: {len(tasks)}")
+        
+    # 计算风格组合数量
+    style_combinations = set((t['target_author'], t['src_author']) for t in tasks)
+    total_style_combinations = set((p.target_author, p.src_author) for p in pair_dict.values())
+    print(f"Total style combinations: {len(style_combinations)}/{len(total_style_combinations)}")
     
-    new_pair_dict = {}
-    for key in pair_dict:
-        p = pair_dict[key]
-        r = result_manager.get_result(p.project_name, p.pair_id)
-        if r.test_passed != "" and not r.test_passed:
-            new_pair_dict[key] = p
-    return new_pair_dict
+    print("Success rate of each method:")
+    target_pair_ids = [p.pair_id for p in pair_dict.values() if p.target_author+p.src_author+p.src_id in  task_keys ]
+    for m in methods:
+        eval_results = EvalResults(m, min_target_code_lines, True)
+        successes_in_target = [r for r in eval_results.get_successes() if r.pair_id in target_pair_ids]
+        success_rate = round(len(successes_in_target)/len(tasks) * 100, 2)
+        print(f"{m}: {success_rate}")
+
+
+def questionnaire_filter_by_file(tasks_file, pair_dict):
+    with open(tasks_file, 'r', encoding='utf-8') as f:
+        tasks = [json.loads(line) for line in f]
+    task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
+    target_pairs = {key:pair_dict[key] for key in pair_dict if pair_dict[key].target_author+pair_dict[key].src_author+pair_dict[key].src_id in  task_keys }
+    return target_pairs
 
 min_target_codes = 200
 project_names = ["across-project"]
 # project_names = ProjectConfigs().get_all_project_names()
 output_dir = os.path.join(TMP_DATA, "analysis")
 pair_dict = create_pair_dict(min_target_codes, project_names)
-pair_dict = questionnaire_filter(methods, min_target_codes, project_names)
-pair_dict = get_test_failed_pairs(min_target_codes, project_names, "egsi")
+
+pair_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
+# pair_dict = questionnaire_filter(methods, min_target_codes, project_names, [51,10000])
+
 
 # style_trigger_analysis("egsi", min_target_codes, False)
 save_code(methods, min_target_codes, project_names, output_dir, pair_dict, lambda x:True)
@@ -690,3 +745,5 @@ save_code(methods, min_target_codes, project_names, output_dir, pair_dict, lambd
 
 # draw_success_matrix(methods, min_target_codes)
 # questionnaire_sample(methods,project_names,  min_target_codes, 2, "../tmp-data/code-materials")
+
+# print_statistic(methods, "tasks.jsonl", pair_dict, min_target_codes)

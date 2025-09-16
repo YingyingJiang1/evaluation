@@ -223,15 +223,17 @@ def print_failed_tests(min_target_lines, method="egsi"):
 
 if __name__ == "__main__":
     
-    methods = [
-            "egsi",
-            "codebuff",
-            "deepseek-r1-0528--free",
-            "gpt-4.1",
-            # "claude-3.7-sonnet"
-        ]
-    update_test_results(200)
+    # methods = [
+    #         "egsi",
+    #         "codebuff",
+    #         "deepseek-r1-0528--free",
+    #         "gpt-4.1",
+    #         # "claude-3.7-sonnet"
+    #     ]
+    # update_test_results(200)
     
-    for m in methods:
-        print_failed_tests(200, m)
+    # for m in methods:
+    #     print_failed_tests(200, m)
+    result = ResultManager(create_transformation_result_jsonl_path("egsi", 200))
+    print(result.get_result("across-project", "328").code)
 

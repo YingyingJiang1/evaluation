@@ -339,10 +339,12 @@ class ResultManager:
         with self.lock:
             return self.result_dict.get((project_name, pair_id), None)
         
-    def get_result_by_id(self, pair_id) -> TransformReuslt:
+    def get_result_by_id(self, pair_id):
         with self.lock:
-            project_name = list(self.result_dict.keys())[0][0]
-            return self.result_dict.get((project_name, pair_id), None)
+            for r in self.result_dict.values():
+                if r.pair_id == pair_id:
+                    return r
+            return None
     
     def remove(self, keys):
         with self.lock:
@@ -587,7 +589,7 @@ def run(project_name, method, min_target_lines, pack=True):
 
     path = create_transformation_pair_path(project_name, min_target_lines)
     data = create_transform_pair_pack(project_name, TransformationData(project_name).load_data(path), pack)
-    parallel_level = 10
+    parallel_level = 8
     size = int(len(data) / parallel_level)
     batch_data = []
     for i in range(0, parallel_level):
@@ -601,6 +603,7 @@ def run(project_name, method, min_target_lines, pack=True):
     try:
 
         if method.startswith("egsi"):
+            shutil.rmtree(os.path.join(TMP_DATA, "results"), ignore_errors=True)
             with ThreadPoolExecutor(max_workers=parallel_level) as executor:
                 futures = [executor.submit(run_egsi, batch, result_manager) for batch in batch_data]
                 for future in futures:

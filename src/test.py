@@ -222,214 +222,6 @@ class Tester:
         self.original_execution_result = None
         self.abs_project_path = os.path.abspath(self.project_config.repo_path)
         
-    def get_pairs(self):
-        id_map = AuthorIDMap()
-        id_map.load()
-        author_ids = id_map.get_author_ids(self.project_config.name)
-        pair_dict = create_pair_dict(200, ["across-project"])
-        return [p for p in pair_dict.values() if p.src_author in author_ids]
-        
-        
-    def run_tests(self, transformation_method, min_target_codes) -> TestResult:
-        test_result = TestResult(transformation_method)
-        
-        # 注意：不要使用project_name, 因为无效
-        result_manager = ResultManager(create_transformation_result_jsonl_path(transformation_method, min_target_codes))
-        transformation_results = result_manager.get_all_results()
-        pair_ids = [r.pair_id for r in self.get_pairs()]
-        transformation_results = [r for r in transformation_results if r.pair_id in pair_ids]
-        result_dict = {r.pair_id:r.code for r in transformation_results}
-        
-        for test_class, val in self.test_coverages.items():
-            print(f"{test_class}:{[m.id for m in val]}")
-        
-        for p in self.get_pairs():
-            pair_id, src_author, src_id = p.pair_id, p.src_author, p.src_id
-            
-            test_classes = [test_class for test_class, relevant_methods in self.test_coverages.items() if any([m.id==src_id for m in relevant_methods])]
-            if not test_classes:
-                continue
-            
-            method = [m for m in self.test_coverages[test_classes[0]] if m.id == src_id][0]
-                
-            new_execution = self.execute_test(test_classes, [method], {src_id:result_dict[pair_id]})
-            old_execution = self.get_original_execution_result(test_classes)
-            
-            r = result_manager.get_result_by_id(pair_id)
-            r.compilable = new_execution.is_compilable
-            
-            if self.is_test_passed(old_execution, new_execution):
-                test_result.add_success_pair(pair_id)
-                r.test_passed = "true"
-            else:
-                test_result.add_failure_pair(pair_id)
-                r.test_passed = "false"
-                break
-            print(r)
-            result_manager.update_all()
-                
-                    
-        result_manager.update_all()
-        return test_result
-    
-    
-    def get_original_execution_result(self, test_classes) -> ExecutionResult:
-        result = ExecutionResult()
-        for test_class in test_classes:
-            if test_class not in self.execution_cache:
-                result = self.execute_test([test_class], [], [])
-                self.execution_cache[test_class] = result
-            result.merge(self.execution_cache[test_class])
-    
-    
-    def get_classpath(self):
-        if self.class_path:
-            return self.class_path
-        if self.project_config.build_tool == "maven":
-            self.class_path = get_maven_classpath(self.project_config)
-        elif self.project_config.build_tool == "gradle":
-            return self.project_config.repo_path
-        return self.class_path
-    
-    def execute_test(self, test_classes, relevant_methods: List[MethodWrapper], transformation_results_dict) -> ExecutionResult:
-        if os.path.exists(self.test_data_dir):
-            shutil.rmtree(self.test_data_dir)
-                
-        file_to_methods: dict[str, List[MethodWrapper]] = {}
-        for method in relevant_methods:
-            filepath = method.get_filepath()
-            file_to_methods.setdefault(filepath, []).append(method)
-        
-        is_compilable = True
-        #  替换源码，生成新java文件
-        for filepath, methods in file_to_methods.items():
-            with open(filepath, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-
-            # 按行号倒序替换，避免后续范围被破坏
-            package = ""
-            for method in sorted(methods, key=lambda m: m.get_line_range()[0], reverse=True):
-                start_line, end_line = method.get_line_range()
-                lines[start_line-1:end_line] = transformation_results_dict[method.id]
-                package = method.get_package()
-            new_filepath = os.path.join(self.test_data_dir, os.path.basename(filepath))
-            os.makedirs(os.path.dirname(new_filepath), exist_ok=True)
-            with open(new_filepath, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-
-            # 2. 编译临时 .java 文件到临时 class 目录
-            compile_command = ["javac", "-d", self.test_data_dir, "-cp", f"{self.project_config.jars};{self.get_classpath()}", new_filepath, "-verbose"]
-            # print(" ".join(compile_command))
-            result = subprocess.run(compile_command, check=True)
-            os.remove(new_filepath)
-            if not result.returncode == 0:
-                is_compilable = False
-                break
-        
-        if is_compilable:
-            select_package_args = []
-            seen_packages = set()
-
-            for cls in test_classes:
-                # 包名是类名中最后一个点之前的部分
-                if "." in cls:
-                    package_name = cls.rsplit(".", 1)[0]
-                    if package_name not in seen_packages:
-                        select_package_args.extend(["--select-package", package_name])
-                        seen_packages.add(package_name)
-            
-            print(select_package_args)
-            # 4. 使用 JUnit Platform ConsoleLauncher 运行测试
-            command = ["java" ,
-                "-jar", self.JUnitLauncher, 
-                "--class-path", f"{self.test_data_dir};{self.get_classpath()}"] + select_package_args
-            print(f"test command:{' '.join(command)}")
-
-            result = subprocess.run(
-                command,
-                cwd=".",
-                capture_output=True,
-                text=True
-            )
-            print(result.stdout)
-
-            # 5. 解析执行结果
-            result =  ExecutionResultParser().parse_result(
-                self.project_config.name, result.stdout, result.stderr, True
-            )
-
-        else:
-            result = ExecutionResult(";".join(test_classes), False)
-            
-        result.test_class = ";".join(test_classes)
-        return result
-            
-    # def execute_test(self, test_class, relevant_methods:List[MethodWrapper], transformation_results_dict) -> ExecutionResult:
-    #     file_to_methods: dict[str, List[MethodWrapper]] = {}
-    #     for method in relevant_methods:
-    #         filepath = method.get_filepath()
-    #         file_to_methods.setdefault(filepath, []).append(method)
-
-    #     # 2. 替换源码
-    #     for filepath, methods in file_to_methods.items():
-    #         with open(filepath, "r", encoding="utf-8") as f:
-    #             lines = f.readlines()
-
-    #         # 按行号倒序替换，避免后续范围被破坏
-    #         for method in sorted(methods, key=lambda m: m.get_line_range()[0], reverse=True):
-    #             start_line, end_line = method.get_line_range()
-    #             lines[start_line-1:end_line] = transformation_results_dict[method.id]
-    #         new_filepath = os.path.join(self.test_data_dir, os.path.basename(filepath))
-    #         with open(new_filepath, "w", encoding="utf-8") as f:
-    #             f.writelines(lines)
-
-    #     # 4. 在 Docker 中运行
-    #     image = self.env.get_docker_image(self.project_config.name)
-    #     volume_args = []
-    #     for file in file_to_methods.keys():
-    #         app_path = file.replace(self.project_config.repo_path, "/app")
-    #         volume_path = os.path.join(self.test_data_dir, os.path.basename(file))
-    #         volume_args.append("-v")
-    #         volume_args.append(f"{volume_path}:{app_path}")
-    #     command = ["docker", "run", "--rm"] + volume_args + [ image, "java", test_class]
-    #     result = subprocess.run(
-    #         command,
-    #         capture_output=True,
-    #         text=True
-    #     )
-    #     print(f"command:{' '.join(command)}")
-        
-    #     execution_result = ExecutionResultParser().parse_result(self.project_config.name, result.stdout, result.stderr)
-
-    #     return execution_result
-    
-    def is_test_passed(self, old_execution:ExecutionResult, new_execution:ExecutionResult):
-        return new_execution.is_compilable and new_execution == old_execution
-    
-
-    def build_env(self):
-        print("Build docker...")
-        projects = ProjectConfigs().projects
-        
-        # 构建环境
-        for project in projects:
-            docker_info = DockerBuilder.build(project.name)
-            self.self.env.add_docker(project.repo_path, docker_info)
-
-
-
-    def test(self, methods, min_target_codes):
-        self.original_execution_result = self.get_execution_result()
-        print(f"original_execution_result: {self.original_execution_result}")
-        # 运行所有测试
-        for method in methods:
-            test_result = self.run_tests(method, min_target_codes)
-        
-        
-        # 输出所有method总的测试通过率
-
-
-class GradleTester(Tester):
     def test(self, methods, min_target_codes):
         print(f"Testing {self.project_config.name}...")
         self.original_execution_result = self.get_execution_result(None, self.project_config.repo_path)
@@ -441,8 +233,14 @@ class GradleTester(Tester):
         
         
         # 输出所有method总的测试通过率
-
-
+        
+    def get_pairs(self):
+        id_map = AuthorIDMap()
+        id_map.load()
+        author_ids = id_map.get_author_ids(self.project_config.name)
+        pair_dict = create_pair_dict(200, ["across-project"])
+        return [p for p in pair_dict.values() if p.src_author in author_ids]
+    
     def get_pair_group(self, pairs):
         groups = []  # 存放所有合法 group
 
@@ -462,7 +260,24 @@ class GradleTester(Tester):
         
         return groups
     
-    def _inject_to_src(self, result_manager:ResultManager, pairs, data:Data, target_dir):
+    def run_tests(self, transformation_method, min_target_codes) -> TestResult:
+        print(f"Running tests for {transformation_method}")
+        pair_groups = self.get_pair_group(self.get_pairs())
+        # for group in pair_groups:
+        #     print(f"group: {[pair.src_id for pair in group]}")        
+        
+        result_manager = ResultManager(create_transformation_result_jsonl_path(transformation_method, min_target_codes))
+        data = Data(self.project_config)
+        
+        original_execution_result = self.original_execution_result
+        
+        for group in pair_groups:
+            group = [p for p in group if result_manager.get_result_by_id(p.pair_id).test_passed == ""] # 获取未测试的pair
+            self._test_pair_group(result_manager, group, data, original_execution_result)
+                    
+            result_manager.update_all()
+        
+    def _inject_to_src(self, result_manager:ResultManager, pairs, data:Data, target_root_dir):
         backups = {} # key:filepath, value:code
         file_to_methods: dict[str, list] = {}  # key: filepath, value: list of (start_line, end_line, new_code)
 
@@ -485,7 +300,7 @@ class GradleTester(Tester):
             reletive_path = filepath.replace(self.project_config.repo_path, "")
             if reletive_path.startswith('/'):
                 reletive_path = reletive_path[1:]
-            filepath = os.path.join(target_dir, reletive_path)
+            filepath = os.path.join(target_root_dir, reletive_path)
             
             backups[filepath] = original_lines
 
@@ -507,26 +322,12 @@ class GradleTester(Tester):
             # print(f"Injected into {filepath}")
             # input("Enter to continue...")
         return backups
-    
-    def run_tests(self, transformation_method, min_target_codes) -> TestResult:
-        print(f"Running tests for {transformation_method}")
-        pair_groups = self.get_pair_group(self.get_pairs())
-        # for group in pair_groups:
-        #     print(f"group: {[pair.src_id for pair in group]}")        
-        
-        result_manager = ResultManager(create_transformation_result_jsonl_path(transformation_method, min_target_codes))
-        data = Data(self.project_config)
-        
-        original_execution_result = self.original_execution_result
-        
-        for group in pair_groups:
-            group = [p for p in group if result_manager.get_result_by_id(p.pair_id).test_passed == ""] # 获取未测试的pair
-            self._test_pair_group(result_manager, group, data, original_execution_result)
-                    
-            result_manager.update_all()
-                
-    
-                
+
+    def execute_test(self) -> CompletedProcess:
+        pass
+
+class GradleTester(Tester):
+
     def _test_pair_group(self, result_manager, group, data, original_execution_result):
         # 如果 group 为空，直接返回
         if not group:
@@ -574,19 +375,20 @@ class GradleTester(Tester):
             print(f"运行测试出错: {e}")
             return None
     
-    def get_execution_result(self, ret:CompletedProcess, module_path) -> ExecutionResult:
+    def get_execution_result(self, ret:CompletedProcess, module_paths) -> ExecutionResult:
         
         result = ExecutionResult()
         result.is_compilable = ret and ret.returncode == 0
 
         # 测试报告路径: 多模块项目可能有多个模块
         test_report_dirs = []
-        for root, dirs, files in os.walk(module_path):
-            if os.path.basename(root) == "test-results":
-                if "test" in dirs:
-                    test_report_dirs.append(os.path.join(root, "test"))
-                elif "testDebugUnitTest" in dirs:
-                    test_report_dirs.append(os.path.join(root, "testDebugUnitTest"))
+        for module_path in module_paths:
+            for root, dirs, files in os.walk(module_path):
+                if os.path.basename(root) == "test-results":
+                    if "test" in dirs:
+                        test_report_dirs.append(os.path.join(root, "test"))
+                    elif "testDebugUnitTest" in dirs:
+                        test_report_dirs.append(os.path.join(root, "testDebugUnitTest"))
 
         # 遍历每个模块的测试报告
         for report_dir in test_report_dirs:
@@ -622,10 +424,11 @@ class GradleTester(Tester):
 
 
 class GradleTesterInDocker(GradleTester):
-    def __init__(self, project_config: ProjectConfig, max_worker):
+    def __init__(self, project_config: ProjectConfig, max_worker, modules, workspace="/workspace"):
         super().__init__(project_config)
-        self.workspace = "/workspace"
+        self.workspace = workspace
         self.exclude_args = ["-x", "runCheckstyle"]
+        self.modules = modules
         self.max_worker = max_worker
         self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
 
@@ -634,21 +437,22 @@ class GradleTesterInDocker(GradleTester):
         result_manager.update_all()
         
     def _test_pair_group(self, result_manager, group, data, original_execution_result):
-        volume_data_path = self.init_data()
+        volumes, volume_root = self.init_data()
                 
         # 如果 group 为空，直接返回
         if not group:
             return
 
         # 一次性注入整个 group
-        backups = self._inject_to_src(result_manager, group, data, os.path.dirname(volume_data_path))
-        ret = self.execute_test(volume_data_path)
+        module_dirs = [volumn.split(":")[0] for volumn in volumes]
+        backups = self._inject_to_src(result_manager, group, data, volume_root)
+        ret = self.execute_test(volumes)
         print(ret)
         self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
             return
-        new_execution_result = self.get_execution_result(ret, volume_data_path)
+        new_execution_result = self.get_execution_result(ret, module_dirs)
 
         if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
             # 整个 group 都成功
@@ -687,30 +491,37 @@ class GradleTesterInDocker(GradleTester):
                 
             result_manager.update_all()
         
-            shutil.rmtree(self.project_test_data)
+            shutil.rmtree(self.project_test_data, ignore_errors=True)
         
     def init_data(self):
         id = threading.get_ident()
          # 生成线程独立根目录
-        volume_data_path = os.path.join(self.project_test_data, f"thread_{id}", "app")
-        # volume_data_path = os.path.join(thread_root , "app")
-        if os.path.exists(volume_data_path):
-            return volume_data_path
+        root = os.path.join(self.project_test_data, f"thread_{id}")
+        volumes = []
+        if os.path.exists(root):
+            return root
         
-        # os.makedirs(volume_data_path, exist_ok=True)
          # 拷贝源码到 app 目录
-        shutil.copytree(os.path.join(self.project_config.repo_path, 'app'), volume_data_path)
-        return volume_data_path
+        for module in self.modules:
+            target_dir = os.path.join(root, module)
+            shutil.copytree(os.path.join(self.project_config.repo_path, module), target_dir)
+            volumes.append(f"{target_dir}:{self.workspace}/{module}")
+        
+        return volumes, root
         
         
         
-    def execute_test(self, volume_data_path) -> CompletedProcess:
+    def execute_test(self, volumes) -> CompletedProcess:
+        volume_args = []
+        for v in volumes:
+            volume_args.append("-v")
+            volume_args.append(v)
         try:
             id = threading.get_ident()
             workspace = self.workspace
             cmd = [
             "docker", "run", "--rm",
-            "-v", f"{volume_data_path}:{workspace}/app",
+            *volume_args,
             # "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
@@ -725,19 +536,134 @@ class GradleTesterInDocker(GradleTester):
             print(f"运行测试出错: {e}")
             return None
 
+
+class MvnTesterInDokcer(GradleTesterInDocker):
+    def __init__(self, project_config: ProjectConfig, max_worker, modules, workspace="/workspace"):
+        super().__init__(project_config, max_worker, modules, workspace)
+        self.exclude_args = []
+        
+    def execute_test(self, volumes) -> CompletedProcess:
+        volume_args = []
+        for v in volumes:
+            volume_args.append("-v")
+            volume_args.append(v)
+        try:
+            id = threading.get_ident()
+            workspace = self.workspace
+            cmd = [
+            "docker", "run", "--rm",
+            *volume_args,
+            "-w", workspace,
+            f"{self.project_config.name.lower()}-image",
+            *self.exclude_args
+        ]
+            print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
+            ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            # print(ret)
+            return ret
+        except Exception as e:
+            print(f"运行测试出错: {e}")
+            return None
+        
+    def get_execution_result(self, ret: CompletedProcess, module_paths) -> ExecutionResult:
+        """
+        解析 Maven 多模块项目的测试结果
+        """
+        result = ExecutionResult()
+        result.is_compilable = ret and ret.returncode == 0
+
+        # Maven 多模块测试报告路径: 每个模块的 target/surefire-reports
+        test_report_dirs = []
+        for module_path in module_paths:
+            for root, dirs, files in os.walk(module_path):
+                if os.path.basename(root) == "target":
+                    if "surefire-reports" in dirs:
+                        test_report_dirs.append(os.path.join(root, "surefire-reports"))
+
+        # 遍历每个模块的测试报告
+        for report_dir in test_report_dirs:
+            for file in os.listdir(report_dir):
+                if not file.endswith(".xml") or not file.startswith("TEST-"):
+                    continue
+                file_path = os.path.join(report_dir, file)
+                try:
+                    tree = ET.parse(file_path)
+                    root_elem = tree.getroot()
+                    # <testsuite> 元素包含测试统计
+                    tests = int(root_elem.attrib.get("tests", 0))
+                    failures = int(root_elem.attrib.get("failures", 0))
+                    errors = int(root_elem.attrib.get("errors", 0))
+                    skipped = int(root_elem.attrib.get("skipped", 0))
+
+                    result.tests += tests
+                    result.failures += failures + errors
+                    result.skipped += skipped
+                except Exception as e:
+                    print(f"解析 {file_path} 出错: {e}")
+                    result.is_compilable = False
+
+        return result
+        
+
+def test_arthas(methods, min_target_codes, worker):
+    arthas_modules = [
+    "web-ui",
+    "math-game",
+    "common",
+    "spy",
+    "arthas-vmtool",
+    "tunnel-common",
+    "tunnel-client",
+    "core",
+    "agent",
+    "client",
+    "memorycompiler",
+    "boot",
+    "arthas-agent-attach",
+    "arthas-spring-boot-starter",
+    "tunnel-server",
+    "testcase",
+    "site",
+    "packaging",
+    "labs"
+    # "labs/arthas-grpc-web-proxy",
+    # "labs/cluster-management/native-agent",
+    # "labs/cluster-management/native-agent-management-web",
+    # "labs/cluster-management/native-agent-proxy",
+    # "labs/cluster-management/native-agent-common",
+    # "labs/arthas-grpc-server"
+]
+    tester = MvnTesterInDokcer(ProjectConfigs().get_project_by_name("arthas"), worker, arthas_modules)
+    tester.test(methods, min_target_codes)
+    
+    
+def test_rxjava(methods, min_target_codes, worker):
+    modules = [
+   "src"
+]
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("RxJava"), worker, modules)
+    tester.test(methods, min_target_codes)
+
+def test_stirlingpdf(methods, min_target_codes, worker):
+    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
+    tester.test(methods, min_target_codes)
+    
+def test_newpipe(methods, min_target_codes, worker):
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"),["app"], worker)
+    tester.test(methods, min_target_codes)
+
+# 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
 if __name__ == "__main__":
     # 示例输入
     methods = [
-        # "deepseek-r1-0528--free",
-        #     "gpt-4.1",
-        #     "codebuff",
-            "egsi",
+        "deepseek-r1-0528--free",
+            "gpt-4.1",
+            "codebuff",
+            # "egsi",
             # "claude-3.7-sonnet"
         ]
     
     min_target_codes = 200
-    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
-    tester.test(methods, min_target_codes)
-    
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), 3)
-    tester.test(methods, min_target_codes)
+    worker = 3
+
+    test_arthas(methods, min_target_codes, worker)
