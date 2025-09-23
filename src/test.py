@@ -1,5 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import socket
 import threading
+import time
 from typing import List
 from dataclasses import dataclass, asdict
 import subprocess
@@ -325,6 +327,8 @@ class Tester:
 
     def execute_test(self) -> CompletedProcess:
         pass
+    
+    
 
 class GradleTester(Tester):
 
@@ -340,7 +344,7 @@ class GradleTester(Tester):
         if ret is None:
             print("无法执行测试，检查！")
             exit(0)
-        new_execution_result = self.get_execution_result(ret, self.project_config.repo_path)
+        new_execution_result = self.get_execution_result(ret, [self.project_config.repo_path])
 
         if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
             # 整个 group 都成功
@@ -360,6 +364,9 @@ class GradleTester(Tester):
                 self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
                 self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
                 
+    def is_test_passed(self, original_execution_result:ExecutionResult, new_execution_result:ExecutionResult):
+        return new_execution_result.is_compilable and new_execution_result.failures <= original_execution_result.failures
+                
     def execute_test(self) -> CompletedProcess:
         try:
             cmd = [f"{os.path.join(os.path.abspath(self.project_config.repo_path), 'gradlew.bat')}", "test", "--no-daemon", "--rerun-tasks", 
@@ -375,11 +382,20 @@ class GradleTester(Tester):
             print(f"运行测试出错: {e}")
             return None
     
-    def get_execution_result(self, ret:CompletedProcess, module_paths) -> ExecutionResult:
+    def get_execution_result(self, ret:CompletedProcess, module_paths:list[str]) -> ExecutionResult:
         
         result = ExecutionResult()
         result.is_compilable = ret and ret.returncode == 0
+        if not result.is_compilable:
+            return result
 
+        
+        return self.get_execution_result_from_build(module_paths)
+        
+        
+    def get_execution_result_from_build(self, module_paths:list[str]):
+        result = ExecutionResult()
+        result.is_compilable = True
         # 测试报告路径: 多模块项目可能有多个模块
         test_report_dirs = []
         for module_path in module_paths:
@@ -413,7 +429,6 @@ class GradleTester(Tester):
                     result.is_compilable = "no"
         return result
         
-        
     def reset(self, backups):
         for filepath, code_lines in backups.items():
             with open(filepath, "w", encoding="utf-8") as f:
@@ -424,37 +439,82 @@ class GradleTester(Tester):
 
 
 class GradleTesterInDocker(GradleTester):
-    def __init__(self, project_config: ProjectConfig, max_worker, modules, workspace="/workspace"):
+    def __init__(self, project_config: ProjectConfig, max_worker, modules=[], workspace="/workspace"):
         super().__init__(project_config)
         self.workspace = workspace
-        self.exclude_args = ["-x", "runCheckstyle"]
+        self.exclude_args = []
         self.modules = modules
         self.max_worker = max_worker
         self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
+        
+        # 保存线程->固定id 映射
+        self.thread_id_map = {}
+        self.lock = threading.Lock()
 
-    def _thread_wrapper(self, result_manager, group, data, original_execution_result):
-        self._test_pair_group(result_manager, group, data, original_execution_result)
-        result_manager.update_all()
+    def get_worker_id(self):
+        id = threading.get_ident()
+        with self.lock:
+            if id not in self.thread_id_map:
+                self.thread_id_map[id] = len(self.thread_id_map) % self.max_worker + 1
+            return self.thread_id_map[id]
+        
+    def test(self, methods, min_target_codes):
+        print(f"Testing {self.project_config.name}...")
+        self.original_execution_result = self.get_execution_result_from_build([self.project_config.repo_path])
+        self.original_execution_result.is_compilable = True
+        print(f"original_execution_result: {self.original_execution_result}")
+        
+        executor = ThreadPoolExecutor(max_workers=self.max_worker)
+        def _callback(fut):
+            result_manager.update_all()
+            
+        # 运行所有测试
+        data = Data(self.project_config)
+        original_execution_result = self.original_execution_result
+        for method in methods:
+            print(f"Test {method}: {len(self.get_pairs())} pairs")
+            pair_groups = self.get_pair_group(self.get_pairs())
+            result_manager = ResultManager(create_transformation_result_jsonl_path(method, min_target_codes))
+            untested_groups = [[p for p in group if result_manager.get_result_by_id(p.pair_id) and result_manager.get_result_by_id(p.pair_id).test_passed == ""] for group in pair_groups]  
+            futures = []
+            if untested_groups:  
+                for id, group in enumerate(untested_groups, start=1): 
+                    # self._test_pair_group(result_manager, group, data, original_execution_result)
+                    future = executor.submit(self._test_pair_group, result_manager, group, data, original_execution_result)
+                    future.add_done_callback(_callback)
+                    futures.append(future)
+            # 阻塞直到所有任务完成
+            for future in as_completed(futures):
+                future.result()
+            result_manager.update_all()
+        
+        executor.shutdown(wait=True)
+        # shutil.rmtree(self.project_test_data, ignore_errors=True)
+
         
     def _test_pair_group(self, result_manager, group, data, original_execution_result):
-        volumes, volume_root = self.init_data()
+        id = self.get_worker_id()
+        volumes, volume_root = self.init_data(id)
                 
         # 如果 group 为空，直接返回
         if not group:
             return
+        
+        print(f"Testing group of size {len(group)} on worker {id}")
 
         # 一次性注入整个 group
-        module_dirs = [volumn.split(":")[0] for volumn in volumes]
+        module_dirs = [volumn[0] for volumn in volumes]
         backups = self._inject_to_src(result_manager, group, data, volume_root)
         ret = self.execute_test(volumes)
-        print(ret)
         self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
             return
         new_execution_result = self.get_execution_result(ret, module_dirs)
+        print(f"return code:{ret.returncode}. new_execution_result: {new_execution_result}")
 
-        if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
+        test_passed = self.is_test_passed(original_execution_result, new_execution_result)
+        if new_execution_result.is_compilable and test_passed:
             # 整个 group 都成功
             for pair in group:
                 r = result_manager.get_result_by_id(pair.pair_id)
@@ -464,49 +524,43 @@ class GradleTesterInDocker(GradleTester):
             if len(group) == 1:
                 # 缩小到单个 pair，直接标记失败
                 r = result_manager.get_result_by_id(group[0].pair_id)
-                r.compilable = False
-                r.test_passed = False
+                r.compilable = new_execution_result.is_compilable
+                r.test_passed = test_passed
             else:
                 # 把 group 拆成两半，递归检测
                 mid = len(group) // 2
                 self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
                 self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+        result_manager.update_all()
         
-    def run_tests(self, transformation_method, min_target_codes) -> TestResult:
-        print(f"Test {transformation_method}: {len(self.get_pairs())} pairs")
-        pair_groups = self.get_pair_group(self.get_pairs())
-        # for group in pair_groups:
-        #     print(f"group: {[pair.src_id for pair in group]}")        
         
-        result_manager = ResultManager(create_transformation_result_jsonl_path(transformation_method, min_target_codes))
-        data = Data(self.project_config)
         
-        original_execution_result = self.original_execution_result
-        
-        untested_groups = [[p for p in group if result_manager.get_result_by_id(p.pair_id) and result_manager.get_result_by_id(p.pair_id).test_passed == ""] for group in pair_groups]      
-        if untested_groups:  
-            with ThreadPoolExecutor(max_workers=self.max_worker) as executor:
-                for group in untested_groups:   
-                    executor.submit(self._thread_wrapper, result_manager,group,  data, original_execution_result)
-                
-            result_manager.update_all()
-        
-            shutil.rmtree(self.project_test_data, ignore_errors=True)
-        
-    def init_data(self):
-        id = threading.get_ident()
+    def init_data(self, id):
+        def ignore_node_modules(dir, files):
+            return ['node_modules'] if 'node_modules' in files else []
+    
          # 生成线程独立根目录
         root = os.path.join(self.project_test_data, f"thread_{id}")
         volumes = []
+        if self.modules:
+            for module in self.modules:
+                target_dir = os.path.join(root, module)
+                volumes.append([target_dir, f"{self.workspace}/{module}"])
+        else: # 挂载整个项目
+            target_dir = os.path.join(root)
+            volumes.append([target_dir, self.workspace])
+            
         if os.path.exists(root):
-            return root
+            return volumes, root
         
-         # 拷贝源码到 app 目录
-        for module in self.modules:
-            target_dir = os.path.join(root, module)
-            shutil.copytree(os.path.join(self.project_config.repo_path, module), target_dir)
-            volumes.append(f"{target_dir}:{self.workspace}/{module}")
-        
+         # 拷贝源码到 workdir
+        if self.modules:
+            for module in self.modules:
+                target_dir = os.path.join(root, module)
+                shutil.copytree(os.path.join(self.project_config.repo_path, module), target_dir, ignore=ignore_node_modules)
+        else:
+            shutil.copytree(self.project_config.repo_path, root, ignore=ignore_node_modules)
+                    
         return volumes, root
         
         
@@ -515,7 +569,7 @@ class GradleTesterInDocker(GradleTester):
         volume_args = []
         for v in volumes:
             volume_args.append("-v")
-            volume_args.append(v)
+            volume_args.append(f"{v[0]}:{v[1]}")
         try:
             id = threading.get_ident()
             workspace = self.workspace
@@ -525,7 +579,6 @@ class GradleTesterInDocker(GradleTester):
             # "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
-            "./gradlew", "testDebugUnitTest",
             *self.exclude_args
         ]
             print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
@@ -538,7 +591,7 @@ class GradleTesterInDocker(GradleTester):
 
 
 class MvnTesterInDokcer(GradleTesterInDocker):
-    def __init__(self, project_config: ProjectConfig, max_worker, modules, workspace="/workspace"):
+    def __init__(self, project_config: ProjectConfig, max_worker, modules=[], workspace="/workspace"):
         super().__init__(project_config, max_worker, modules, workspace)
         self.exclude_args = []
         
@@ -546,7 +599,7 @@ class MvnTesterInDokcer(GradleTesterInDocker):
         volume_args = []
         for v in volumes:
             volume_args.append("-v")
-            volume_args.append(v)
+            volume_args.append(f"{v[0]}:{v[1]}")
         try:
             id = threading.get_ident()
             workspace = self.workspace
@@ -565,13 +618,19 @@ class MvnTesterInDokcer(GradleTesterInDocker):
             print(f"运行测试出错: {e}")
             return None
         
-    def get_execution_result(self, ret: CompletedProcess, module_paths) -> ExecutionResult:
+    def get_execution_result(self, ret: CompletedProcess, module_paths:list[str]) -> ExecutionResult:
         """
         解析 Maven 多模块项目的测试结果
         """
         result = ExecutionResult()
         result.is_compilable = ret and ret.returncode == 0
-
+        if not result.is_compilable:
+            return result
+        return self.get_execution_result_from_build(module_paths)
+        
+    def get_execution_result_from_build(self, module_paths:list[str]):
+        result = ExecutionResult()
+        result.is_compilable = True
         # Maven 多模块测试报告路径: 每个模块的 target/surefire-reports
         test_report_dirs = []
         for module_path in module_paths:
@@ -601,7 +660,6 @@ class MvnTesterInDokcer(GradleTesterInDocker):
                 except Exception as e:
                     print(f"解析 {file_path} 出错: {e}")
                     result.is_compilable = False
-
         return result
         
 
@@ -645,25 +703,78 @@ def test_rxjava(methods, min_target_codes, worker):
     tester.test(methods, min_target_codes)
 
 def test_stirlingpdf(methods, min_target_codes, worker):
-    tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"))
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker, ["app"])
     tester.test(methods, min_target_codes)
     
+def test_jedis(methods, min_target_codes, worker):
+    # 执行：docker run -p 6379:6379 -it redis/redis-stack:latest
+    # --- 启动 Redis ---
+    def is_redis_running():
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=redis", "--format", "{{.Names}}"],
+            capture_output=True, text=True
+        )
+        return "redis" in result.stdout
+
+    def start_redis():
+        if not is_redis_running():
+            # 删除已存在的同名容器
+            subprocess.run(["docker", "rm", "-f", "redis"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # 启动 Redis 容器
+            subprocess.run([
+                "docker", "run", "-d", "--name", "redis",
+                "-p", "6379:6379",
+                "redis/redis-stack:latest"
+            ])
+            print("Redis container started.")
+
+    def wait_redis_ready(host="localhost", port=6379, timeout=30):
+        print("Waiting for Redis to be ready...")
+        start_time = time.time()
+        while True:
+            try:
+                with socket.create_connection((host, port), timeout=1):
+                    print("Redis is ready!")
+                    return
+            except (ConnectionRefusedError, OSError):
+                if time.time() - start_time > timeout:
+                    raise TimeoutError("Redis did not start in time.")
+                time.sleep(0.5)
+
+    # 执行启动和等待
+    start_redis()
+    wait_redis_ready()
+
+    # --- 初始化测试 ---
+    project_config = ProjectConfigs().get_project_by_name("jedis")
+    tester = MvnTesterInDokcer(project_config, worker)
+    tester.test(methods, min_target_codes)
+
+    
 def test_newpipe(methods, min_target_codes, worker):
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"),["app"], worker)
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), worker, ["app"])
     tester.test(methods, min_target_codes)
 
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
 if __name__ == "__main__":
+    import sys
     # 示例输入
     methods = [
         "deepseek-r1-0528--free",
             "gpt-4.1",
+            # "gpt-5",
             "codebuff",
-            # "egsi",
+            "egsi",
             # "claude-3.7-sonnet"
         ]
     
-    min_target_codes = 200
+    # lines = [200, 400, 800, 1000]
+    line = int(sys.argv[1])
+    min_target_codes = line
     worker = 3
+    
+    test_jedis(methods, min_target_codes, worker)
+    test_stirlingpdf(methods, min_target_codes, worker)
+    test_newpipe(methods, min_target_codes, worker)
 
-    test_arthas(methods, min_target_codes, worker)
+    # test_arthas(methods, min_target_codes, worker)

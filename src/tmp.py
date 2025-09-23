@@ -6,7 +6,7 @@ import re
 
 import json
 
-from eval import DataCache
+from eval import DataCache, create_pair_dict
 
 
 def update_pair_id(old_data:list[TransformPair], new_data:list[TransformPair]):
@@ -211,15 +211,15 @@ def update_test_results(min_target_lines, method="egsi"):
             
     manager.update_all()
     
+
     
-def print_failed_tests(min_target_lines, method="egsi"):
-    file = create_transformation_result_jsonl_path(method, min_target_lines)
-    manager = ResultManager(file)
-    failed = []
-    for r in manager.get_all_results():
-        if r.test_passed != "" and not r.test_passed:
-            failed.append(r.pair_id)
-    print(f"{method}:{failed}")
+    
+def count_different_src_files():
+    pair_dict = create_pair_dict(200, ["across-project"])
+    file_set = set()
+    for p in pair_dict.values():
+        file_set.add(p.src_author + p.src_id)
+    print(len(file_set))
 
 if __name__ == "__main__":
     
@@ -234,6 +234,8 @@ if __name__ == "__main__":
     
     # for m in methods:
     #     print_failed_tests(200, m)
-    result = ResultManager(create_transformation_result_jsonl_path("egsi", 200))
-    print(result.get_result("across-project", "328").code)
+    # result = ResultManager(create_transformation_result_jsonl_path("egsi", 200))
+    # print(result.get_result("across-project", "328").code)
+    
+    count_different_src_files()
 

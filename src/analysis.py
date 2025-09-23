@@ -1,5 +1,6 @@
 import math
 import os
+import re
 import shutil
 import json
 from collections import defaultdict, Counter
@@ -56,29 +57,20 @@ def save_code(methods, min_target_codes, project_names,
         
     classification_results_map = {}
     
-    target_map = {
-        # "A1-M52M1201M1346M925M873M1349": ["M873","M925", "M1346"],
-        # "A133-M1359M186M124": ["M186","M1359"],
-        # "A133-M87M729M786":["M786", "M87"],
-        # "A138-M539M1118M504M852M519M536": ["M504","M536", "M852"],
-        # "A138-M1497M1118M512M852M519M536": ["M512","M536", "M852", "M1118", "M519"],
-        # "A233-M33M608M516M543": ["M33","M516", "M608"],
-        # "A233-M153M623M516M543": ["M516","M623", "M543"],
-        # "A233-M426M27M516M583": ["M27","M426", "M516", "M583"],
-        # "A233-M454M27M38M635":["M27","M38","M635"],
-        # "A248-M570M359M362": ["M359","M367"],
-        # "A305-M217M383M257M328M372":["M217","M383","M257","M328", "M372"],
-        # "A305-M452M383M257M328M372":["M452","M383","M257","M328", "M372"],
-        # "A328-M817M1117M1066M1099": ["M1099","M1066", "M1117"],
-        # "A461": ["M1384","M1619"],
-        # "A591": ["M149","M163", "M185"],
-    }
+    
+    target_map = {}
+    with open('tasks.jsonl', 'r') as f:
+        tasks = [json.loads(line) for line in f]
+    for t in tasks:
+        key = t["target_author"] + t["src_author"] + t["src_id"]
+        target_map[key] = t["target_ids"]
+    # print(target_map)
     
     style_dir_map = {}
 
     random.seed(42)
     for method in methods:
-        eval_results = EvalResults(method, min_target_codes, True) 
+        eval_results = EvalResults(method, min_target_codes, "across-project" in project_names) 
         transform_results = ResultManager(create_transformation_result_jsonl_path(method, min_target_codes))
         for r in eval_results.results:
             if condition(r):
@@ -96,7 +88,7 @@ def save_code(methods, min_target_codes, project_names,
                 style_value = target_author + target_ids.__str__()
                 if style_value not in style_dir_map:
                     style_dir_map[style_value] = f"style{len(style_dir_map)}"
-                pair_dir = os.path.join(output_dir, r.project_name, f"{target_author}-{''.join(target_ids)}")
+                pair_dir = os.path.join(output_dir,  f"{target_author}-{''.join(target_ids)}")
                                         
                 # write transformation code and original src file
                 src_codes_dir = os.path.join(pair_dir, src_author, src_id)
@@ -129,14 +121,16 @@ def save_code(methods, min_target_codes, project_names,
                         with open(os.path.join(style_codes_dir, f"{src_ids[i]}.java"), 'w') as f:
                             f.write(code_list[i])
                 
-                key = f"{target_author}-{''.join(target_ids)}"
+                key = f"{target_author}{src_author}{src_id}"
                 if key in target_map :
                     src_ids = target_map[key] 
+                
                 target_path = os.path.join(src_codes_dir, "Target.java")
                 if not os.path.exists(target_path):
                     for id in src_ids:
                         code_list = DataCache.get_code_list(r.project_name, target_author, [id])
                         with open(target_path, 'a') as f:
+                            # f.write(f"// {id}\n")
                             f.write(code_list[0])
                             f.write("\n\n")
                 
@@ -354,7 +348,7 @@ def questionnaire_filter(methods, min_target_codes, project_names, line_range):
     pair_dict = create_pair_dict(min_target_codes, project_names)
     
     
-    eval_result_map = {method:EvalResults(method, min_target_codes, True) for method in methods}
+    eval_result_map = {method:EvalResults(method, min_target_codes, "across-project" in project_names) for method in methods}
     
     stats = {}
     running_stat = EgsiRunningStat()
@@ -438,12 +432,12 @@ def questionnaire_filter(methods, min_target_codes, project_names, line_range):
     #     key = (p.project_name, p.pair_id)
     #     new_pair_dict[key] = p
         
-    src_set = set()
-    for p in new_pair_dict.values():
-        src_set.add((p.src_author, p.src_id))
-    print(f"different src files:{len(src_set)}")
-    print(f"style combinations:{len(style_combinations_map)}")
-    print(f"total task: {len(new_pair_dict)}")
+    # src_set = set()
+    # for p in new_pair_dict.values():
+    #     src_set.add((p.src_author, p.src_id))
+    # print(f"different src files:{len(src_set)}")
+    # print(f"style combinations:{len(style_combinations_map)}")
+    # print(f"total task: {len(new_pair_dict)}")
     
     return new_pair_dict
 
@@ -456,7 +450,7 @@ def get_forsee_label(filepath, project_names, methods,min_target_lines, output_p
     
     eval_results_map = {}
     for method in methods:
-        eval_results_map[method] = EvalResults(method, min_target_lines, True)
+        eval_results_map[method] = EvalResults(method, min_target_lines, "across-project" in project_names)
         
     pair_dict = create_pair_dict(min_target_lines, project_names)
     pair_dict = {p.pair_id : p for p in pair_dict.values() if p.pair_id in task_map.values()}
@@ -685,6 +679,93 @@ def questionnaire_sample(methods, project_names, min_target_lines, n, output_dir
         total = success_count + failure_count
         print(f"{m}: {success_count}/{total} ({success_count/total:.2%} success)")
     
+
+
+
+def print_statistic(methods, pair_dict, min_target_code_lines):
+    # 总的任务数量
+    # with open(tasks_file, 'r', encoding='utf-8') as f:
+    #     tasks = [json.loads(line) for line in f]
+    # task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
+    print(f"Total tasks: {len(pair_dict)}")
+        
+    # 计算风格组合数量
+    style_combinations = set((p.target_author, p.src_author) for p in pair_dict.values())
+    print(f"style combinations: {len(style_combinations)}")
+    
+    print("Success rate of each method:")
+    target_pair_ids = [p.pair_id for p in pair_dict.values()]
+    for m in methods:
+        eval_results = EvalResults(m, min_target_code_lines, True)
+        successes_in_target = [r for r in eval_results.get_successes() if r.pair_id in target_pair_ids]
+        success_rate = round(len(successes_in_target)/len(pair_dict) * 100, 2)
+        print(f"{m}: {success_rate}")
+
+def update_target_ids_of_tasks(tasks_file, pair_dict):
+    with open(tasks_file, 'r', encoding='utf-8') as f:
+        tasks = [json.loads(line) for line in f]
+    target_ids_map  = {p.target_author+p.src_author+p.src_id:p.target_ids for p in pair_dict.values()}
+    for t in tasks:
+        t['target_ids'] = target_ids_map[t['target_author']+t['src_author']+t['src_id']]
+        
+    with open(tasks_file, 'w', encoding='utf-8') as f:
+        for t in tasks:
+            json.dump(t, f)
+            f.write('\n')
+
+
+def questionnaire_filter_by_file(tasks_file, pair_dict):
+    with open(tasks_file, 'r', encoding='utf-8') as f:
+        tasks = [json.loads(line) for line in f]
+    task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
+    target_pairs = {key:pair_dict[key] for key in pair_dict if pair_dict[key].target_author+pair_dict[key].src_author+pair_dict[key].src_id in  task_keys }
+    return target_pairs
+
+def filter_more_than_format(methods, min_target_codes, pair_dict, line_range):
+    result_map = {method:ResultManager(create_transformation_result_jsonl_path(method, min_target_codes)) for method in methods}
+    result = {}
+    for key in pair_dict.keys():
+        p = pair_dict[key]
+        original_src = DataCache.get_code_list(p.project_name, p.src_author, [p.src_id])[0]
+        lines = len(original_src.splitlines())
+        if lines < line_range[0] or lines > line_range[1]:
+            continue
+        
+        modify_more_than_format = 0
+        for r in result_map.values():
+            r = r.get_result(p.project_name, p.pair_id)
+            if r and re.sub('\s+', '', r.code) != re.sub('\s+', '', original_src):
+                modify_more_than_format += 1
+            
+        if modify_more_than_format > 0:
+            result[key] = p
+                
+    return result
+
+def sample_dict(d: dict, n_percent: float) -> dict:
+    random.seed(42)
+    
+    # 计算需要抽取的数量
+    sample_size = max(1, int(len(d) * n_percent))
+    
+    # 随机抽取键
+    keys = random.sample(sorted(list(d.keys())), sample_size)
+    
+    # 构造子字典
+    return {k: d[k] for k in keys}
+
+
+    
+def get_failed_pairs(pair_dict, min_target_lines, method="egsi"):
+    file = create_transformation_result_jsonl_path(method, min_target_lines)
+    manager = ResultManager(file)
+    failed = []
+    for r in manager.get_all_results():
+        if r.test_passed != "" and not r.test_passed:
+            failed.append(r.pair_id)
+    return {k:v for k, v in pair_dict.items() if v.pair_id in failed}
+
+
 methods = [
             "egsi",
             # "egsi-newformat",
@@ -699,43 +780,24 @@ methods = [
             # "claude-3.7-sonnet"
         ]
 
-
-def print_statistic(methods, tasks_file, pair_dict, min_target_code_lines):
-    # 总的任务数量
-    with open(tasks_file, 'r', encoding='utf-8') as f:
-        tasks = [json.loads(line) for line in f]
-    task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
-    print(f"Total tasks: {len(tasks)}")
-        
-    # 计算风格组合数量
-    style_combinations = set((t['target_author'], t['src_author']) for t in tasks)
-    total_style_combinations = set((p.target_author, p.src_author) for p in pair_dict.values())
-    print(f"Total style combinations: {len(style_combinations)}/{len(total_style_combinations)}")
-    
-    print("Success rate of each method:")
-    target_pair_ids = [p.pair_id for p in pair_dict.values() if p.target_author+p.src_author+p.src_id in  task_keys ]
-    for m in methods:
-        eval_results = EvalResults(m, min_target_code_lines, True)
-        successes_in_target = [r for r in eval_results.get_successes() if r.pair_id in target_pair_ids]
-        success_rate = round(len(successes_in_target)/len(tasks) * 100, 2)
-        print(f"{m}: {success_rate}")
-
-
-def questionnaire_filter_by_file(tasks_file, pair_dict):
-    with open(tasks_file, 'r', encoding='utf-8') as f:
-        tasks = [json.loads(line) for line in f]
-    task_keys = [t['target_author']+t['src_author']+t['src_id'] for t in tasks]
-    target_pairs = {key:pair_dict[key] for key in pair_dict if pair_dict[key].target_author+pair_dict[key].src_author+pair_dict[key].src_id in  task_keys }
-    return target_pairs
-
 min_target_codes = 200
 project_names = ["across-project"]
-# project_names = ProjectConfigs().get_all_project_names()
-output_dir = os.path.join(TMP_DATA, "analysis")
+output_dir = os.path.join(TMP_DATA, "code-materials")
 pair_dict = create_pair_dict(min_target_codes, project_names)
+task_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
+# pair_dict = questionnaire_filter(methods, min_target_codes, project_names, [1,100])
+# pair_dict = filter_more_than_format(methods, min_target_codes, pair_dict, [0,100])
 
-pair_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
-# pair_dict = questionnaire_filter(methods, min_target_codes, project_names, [51,10000])
+# srcs = set()
+# for t in task_dict.values():
+#     srcs.add(t.src_author + t.src_id)
+# pair_dict = {k:v for k, v in pair_dict.items() if k not in task_dict and v.src_author + v.src_id not in srcs}
+
+pair_dict = get_failed_pairs(pair_dict, min_target_codes, "codebuff")
+
+# pair_dict = task_dict
+print_statistic(methods, pair_dict, min_target_codes)
+
 
 
 # style_trigger_analysis("egsi", min_target_codes, False)

@@ -3,7 +3,7 @@ import os
 from path import *
 
 DATASET_CREATION = "across-project"
-# DATASET_CREATION = "inner-project"
+# DATASET_CREATION = ""
 
 def create_src_codes_dir(project_name):
     return os.path.join(TMP_DATA, project_name, "src-codes")

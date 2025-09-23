@@ -12,7 +12,7 @@ from utils import *
 from multiprocessing import Process
 from concurrent.futures import ThreadPoolExecutor
 
-from openai import OpenAI
+# from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from transformers import (
@@ -42,11 +42,11 @@ class TransformPairPack:
         return self.target_author
     
     def get_src_codes_dir(self):
-        return os.path.join(create_src_codes_dir(self.project_name), f"{self.src_author}-{self.target_author}")
+        return os.path.join(TMP_DATA, self.project_name, f"{self.src_author}-{self.target_author}", "src")
 
     #  同一个target author的代码是公用的
     def get_target_codes_dir(self):
-        return os.path.join(create_target_codes_dir(self.project_name), self.target_author)
+        return os.path.join(TMP_DATA, self.project_name, f"{self.src_author}-{self.target_author}", "target")
     
     def get_result_dir(self):
         return os.path.join(TMP_DATA, "results", self.src_author, self.target_author, )
@@ -185,7 +185,6 @@ class DataCache:
 
 def generate_prompt(pair:TransformPairPack):
     def get_wrapped_codes(project_name, author, ids):
-        dir = os.path.join(create_codes_dir(project_name), author)
         code_list = DataCache.get_code_list(project_name, author, ids)
         code_list = [f"```java\n{code}\n```" for code in code_list]
         # filepaths = []

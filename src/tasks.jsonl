@@ -1,35 +1,60 @@
-{"target_author": "A1", "src_author": "A133", "src_id": "M716"}
-{"target_author": "A1", "src_author": "A233", "src_id": "M101"}
-{"target_author": "A1", "src_author": "A233", "src_id": "M307"}
-{"target_author": "A1", "src_author": "A233", "src_id": "M488"}
-{"target_author": "A1", "src_author": "A328", "src_id": "M1043"}
-{"target_author": "A1", "src_author": "A461", "src_id": "M2247"}
-{"target_author": "A1", "src_author": "A461", "src_id": "M66"}
-{"target_author": "A133", "src_author": "A248", "src_id": "M364"}
-{"target_author": "A133", "src_author": "A1", "src_id": "M1229"}
-{"target_author": "A133", "src_author": "A1", "src_id": "M9"}
-{"target_author": "A133", "src_author": "A233", "src_id": "M135"}
-{"target_author": "A133", "src_author": "A233", "src_id": "M307"}
-{"target_author": "A133", "src_author": "A233", "src_id": "M403"}
-{"target_author": "A138", "src_author": "A591", "src_id": "M219"}
-{"target_author": "A233", "src_author": "A138", "src_id": "M475"}
-{"target_author": "A233", "src_author": "A328", "src_id": "M1043"}
-{"target_author": "A305", "src_author": "A248", "src_id": "M364"}
-{"target_author": "A305", "src_author": "A591", "src_id": "M478"}
-{"target_author": "A328", "src_author": "A248", "src_id": "M348"}
-{"target_author": "A328", "src_author": "A591", "src_id": "M942"}
-{"target_author": "A328", "src_author": "A1", "src_id": "M9"}
-{"target_author": "A461", "src_author": "A591", "src_id": "M186"}
-{"target_author": "A461", "src_author": "A591", "src_id": "M520"}
-{"target_author": "A461", "src_author": "A1", "src_id": "M1057"}
-{"target_author": "A461", "src_author": "A1", "src_id": "M1277"}
-{"target_author": "A591", "src_author": "A305", "src_id": "M424"}
-{"target_author": "A591", "src_author": "A328", "src_id": "M1043"}
-{"target_author": "A591", "src_author": "A328", "src_id": "M1136"}
-{"target_author": "A591", "src_author": "A461", "src_id": "M362"}
-{"target_author": "A591", "src_author": "A461", "src_id": "M66"}
-{"target_author": "A1", "src_author": "A138", "src_id": "M753"}
-{"target_author": "A1", "src_author": "A461", "src_id": "M885"}
-{"target_author": "A133", "src_author": "A233", "src_id": "M31"}
-{"target_author": "A233", "src_author": "A133", "src_id": "M122"}
-{"target_author": "A591", "src_author": "A138", "src_id": "M753"}
+{"task_id": "task1", "target_author": "A1", "src_author": "A133", "src_id": "M716", "target_ids": ["M925", "M1201", "M1346", "M52", "M873", "M1349"]}
+{"task_id": "task2", "target_author": "A1", "src_author": "A233", "src_id": "M101", "target_ids": ["M1201", "M1346", "M52", "M925", "M873", "M1349"]}
+{"task_id": "task3", "target_author": "A1", "src_author": "A233", "src_id": "M307", "target_ids": ["M1201", "M52", "M1346", "M925", "M873", "M1349"]}
+{"task_id": "task4", "target_author": "A1", "src_author": "A233", "src_id": "M488", "target_ids": ["M1201", "M1346", "M925", "M873", "M52", "M1349"]}
+{"task_id": "task5", "target_author": "A1", "src_author": "A328", "src_id": "M1043", "target_ids": ["M873", "M1349", "M1346", "M1201", "M925", "M52"]}
+{"task_id": "task6", "target_author": "A1", "src_author": "A461", "src_id": "M2247", "target_ids": ["M1201", "M925", "M1346", "M52", "M873", "M1349"]}
+{"task_id": "task7", "target_author": "A1", "src_author": "A461", "src_id": "M66", "target_ids": ["M925", "M1346", "M52", "M1201", "M873", "M1349"]}
+{"task_id": "task9", "target_author": "A133", "src_author": "A248", "src_id": "M364", "target_ids": ["M186", "M1359", "M124"]}
+{"task_id": "task27", "target_author": "A328", "src_author": "A248", "src_id": "M348", "target_ids": ["M1066", "M1033", "M1099", "M1117"]}
+{"task_id": "task10", "target_author": "A133", "src_author": "A1", "src_id": "M1229", "target_ids": ["M729", "M786", "M87"]}
+{"task_id": "task12", "target_author": "A133", "src_author": "A1", "src_id": "M9", "target_ids": ["M786", "M87", "M729"]}
+{"task_id": "task13", "target_author": "A133", "src_author": "A233", "src_id": "M135", "target_ids": ["M729", "M786", "M87"]}
+{"task_id": "task14", "target_author": "A133", "src_author": "A233", "src_id": "M307", "target_ids": ["M87", "M729", "M786"]}
+{"task_id": "task21", "target_author": "A233", "src_author": "A138", "src_id": "M535", "target_ids": ["M623", "M153", "M516", "M543"]}
+{"task_id": "task17", "target_author": "A133", "src_author": "A233", "src_id": "M403", "target_ids": ["M729", "M786", "M87"]}
+{"task_id": "task20", "target_author": "A233", "src_author": "A138", "src_id": "M475", "target_ids": ["M623", "M516", "M153", "M543"]}
+{"task_id": "task29", "target_author": "A328", "src_author": "A591", "src_id": "M942", "target_ids": ["M1117", "M1066", "M1099", "M1033"]}
+{"task_id": "task25", "target_author": "A305", "src_author": "A591", "src_id": "M1086", "target_ids": ["M452", "M383", "M257", "M328", "M372"]}
+{"task_id": "task30", "target_author": "A328", "src_author": "A1", "src_id": "M9", "target_ids": ["M1066", "M817", "M1117", "M1099"]}
+{"task_id": "task31", "target_author": "A461", "src_author": "A591", "src_id": "M186", "target_ids": ["M2225", "M870", "M807", "M1384", "M1619"]}
+{"task_id": "task32", "target_author": "A461", "src_author": "A591", "src_id": "M520", "target_ids": ["M1384", "M1619", "M807", "M2225", "M870"]}
+{"task_id": "task8", "target_author": "A1", "src_author": "A461", "src_id": "M885", "target_ids": ["M1201", "M52", "M1346", "M925", "M873", "M1349"]}
+{"task_id": "task16", "target_author": "A133", "src_author": "A233", "src_id": "M317", "target_ids": ["M729", "M786", "M87"]}
+{"task_id": "task18", "target_author": "A138", "src_author": "A591", "src_id": "M192", "target_ids": ["M539", "M1118", "M852", "M504", "M519", "M536"]}
+{"task_id": "task11", "target_author": "A133", "src_author": "A1", "src_id": "M1277", "target_ids": ["M87", "M729", "M786"]}
+{"task_id": "task36", "target_author": "A591", "src_author": "A328", "src_id": "M1043", "target_ids": ["M163", "M149", "M185", "M41", "M1130"]}
+{"task_id": "task34", "target_author": "A461", "src_author": "A1", "src_id": "M1277", "target_ids": ["M1384", "M81", "M704", "M870", "M1619"]}
+{"task_id": "task33", "target_author": "A461", "src_author": "A1", "src_id": "M1057", "target_ids": ["M81", "M704", "M870", "M1384", "M1619"]}
+{"task_id": "task37", "target_author": "A591", "src_author": "A328", "src_id": "M1067", "target_ids": ["M163", "M149", "M185", "M41", "M1130"]}
+{"task_id": "task19", "target_author": "A138", "src_author": "A591", "src_id": "M219", "target_ids": ["M539", "M1118", "M504", "M852", "M519", "M536"]}
+{"task_id": "task38", "target_author": "A591", "src_author": "A328", "src_id": "M1136", "target_ids": ["M163", "M149", "M185", "M41", "M1130"]}
+{"task_id": "task23", "target_author": "A233", "src_author": "A328", "src_id": "M1043", "target_ids": ["M38", "M27", "M635", "M454"]}
+{"task_id": "task24", "target_author": "A305", "src_author": "A248", "src_id": "M364", "target_ids": ["M257", "M328", "M372", "M217", "M383"]}
+{"task_id": "task15", "target_author": "A133", "src_author": "A233", "src_id": "M31", "target_ids": ["M729", "M786", "M87"]}
+{"task_id": "task26", "target_author": "A305", "src_author": "A591", "src_id": "M478", "target_ids": ["M452", "M383", "M257", "M328", "M372"]}
+{"task_id": "task39", "target_author": "A591", "src_author": "A461", "src_id": "M362", "target_ids": ["M163", "M149", "M185", "M41", "M1130"]}
+{"task_id": "task40", "target_author": "A591", "src_author": "A461", "src_id": "M66", "target_ids": ["M163", "M149", "M185", "M41", "M1130"]}
+{"task_id": "task28", "target_author": "A328", "src_author": "A591", "src_id": "M219", "target_ids": ["M1117", "M1066", "M1099", "M1033"]}
+{"task_id": "task22", "target_author": "A233", "src_author": "A133", "src_id": "M122", "target_ids": ["M426", "M27", "M516", "M583"]}
+{"task_id": "task35", "target_author": "A591", "src_author": "A305", "src_id": "M424", "target_ids": ["M1130", "M1046", "M290", "M1129", "M196"]}
+{"target_author": "A1", "src_author": "A133", "src_id": "M602", "target_ids": ["M52", "M1201", "M1346", "M925", "M873", "M1349"], "task_id": "task2"}
+{"target_author": "A1", "src_author": "A328", "src_id": "M1047", "target_ids": ["M52", "M1201", "M1346", "M925", "M873", "M1349"], "task_id": "task5"}
+{"target_author": "A1", "src_author": "A461", "src_id": "M469", "target_ids": ["M52", "M1201", "M1346", "M925", "M873", "M1349"], "task_id": "task11"}
+{"target_author": "A133", "src_author": "A248", "src_id": "M342", "target_ids": ["M1359", "M186", "M124"], "task_id": "task12"}
+{"target_author": "A133", "src_author": "A233", "src_id": "M24", "target_ids": ["M87", "M729", "M786"], "task_id": "task13"}
+{"target_author": "A233", "src_author": "A138", "src_id": "M1131", "target_ids": ["M153", "M623", "M516", "M543"], "task_id": "task14"}
+{"target_author": "A233", "src_author": "A138", "src_id": "M15", "target_ids": ["M153", "M623", "M516", "M543"], "task_id": "task15"}
+{"target_author": "A233", "src_author": "A1", "src_id": "M894", "target_ids": ["M33", "M608", "M516", "M543"], "task_id": "task16"}
+{"target_author": "A233", "src_author": "A133", "src_id": "M602", "target_ids": ["M426", "M27", "M516", "M583"], "task_id": "task17"}
+{"target_author": "A233", "src_author": "A133", "src_id": "M790", "target_ids": ["M426", "M27", "M516", "M583"], "task_id": "task18"}
+{"target_author": "A233", "src_author": "A133", "src_id": "M928", "target_ids": ["M426", "M27", "M516", "M583"], "task_id": "task19"}
+{"target_author": "A248", "src_author": "A133", "src_id": "M8", "target_ids": ["M367", "M359", "M362"], "task_id": "task22"}
+{"target_author": "A328", "src_author": "A1", "src_id": "M1213", "target_ids": ["M817", "M1117", "M1066", "M1099"], "task_id": "task27"}
+{"target_author": "A328", "src_author": "A461", "src_id": "M1163", "target_ids": ["M817", "M1117", "M1066", "M1099"], "task_id": "task28"}
+{"target_author": "A328", "src_author": "A461", "src_id": "M469", "target_ids": ["M817", "M1117", "M1066", "M1099"], "task_id": "task29"}
+{"target_author": "A461", "src_author": "A248", "src_id": "M371", "target_ids": ["M1238", "M704", "M1938", "M1384", "M1619"], "task_id": "task30"}
+{"target_author": "A461", "src_author": "A328", "src_id": "M1106", "target_ids": ["M807", "M2133", "M870", "M774", "M1619"], "task_id": "task32"}
+{"target_author": "A461", "src_author": "A1", "src_id": "M1213", "target_ids": ["M81", "M704", "M870", "M1384", "M1619"], "task_id": "task34"}
+{"target_author": "A591", "src_author": "A328", "src_id": "M1106", "target_ids": ["M1130", "M149", "M185", "M163", "M41"], "task_id": "task37"}
+{"target_author": "A591", "src_author": "A328", "src_id": "M827", "target_ids": ["M1130", "M149", "M185", "M163", "M41"], "task_id": "task39"}
