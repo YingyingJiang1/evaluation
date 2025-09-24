@@ -483,7 +483,7 @@ class GradleTesterInDocker(GradleTester):
                 for id, group in enumerate(untested_groups, start=1): 
                     # self._test_pair_group(result_manager, group, data, original_execution_result)
                     future = executor.submit(self._test_pair_group, result_manager, group, data, original_execution_result)
-                    future.add_done_callback(_callback)
+                    # future.add_done_callback(_callback)
                     futures.append(future)
             # 阻塞直到所有任务完成
             for future in as_completed(futures):
@@ -494,15 +494,15 @@ class GradleTesterInDocker(GradleTester):
         # shutil.rmtree(self.project_test_data, ignore_errors=True)
 
         
-    def _test_pair_group(self, result_manager, group, data, original_execution_result):
+    def _test_pair_group(self, result_manager:ResultManager, group, data, original_execution_result):
         id = self.get_worker_id()
         volumes, volume_root = self.init_data(id)
                 
         # 如果 group 为空，直接返回
         if not group:
             return
-        
-        print(f"Testing group of size {len(group)} on worker {id}")
+        method_name = os.path.basename(result_manager.output_file).replace(".jsonl", "")
+        print(f"Testing {method_name}'s group of size {len(group)} on worker {id}")
 
         # 一次性注入整个 group
         module_dirs = [volumn[0] for volumn in volumes]
@@ -757,6 +757,11 @@ def test_jedis(methods, min_target_codes, worker):
     project_config = ProjectConfigs().get_project_by_name("jedis")
     tester = MvnTesterInDokcer(project_config, worker)
     tester.test(methods, min_target_codes)
+    
+def test_zookeeper():
+    project_config = ProjectConfigs().get_project_by_name("zookeeper")
+    tester = MvnTesterInDokcer(project_config, worker, modules=['zookeeper-contrib', 'zookeeper-it', 'zookeeper-jute', 'zookeeper-metrics-providers', 'zookeeper-recipes', 'zookeeper-server'])
+    tester.test(methods, min_target_codes)
 
     
 def test_newpipe(methods, min_target_codes, worker):
@@ -779,10 +784,11 @@ if __name__ == "__main__":
     # lines = [200, 400, 800, 1000]
     line = int(sys.argv[1])
     min_target_codes = line
-    worker = 3
+    worker = 5
     
-    test_jedis(methods, min_target_codes, worker)
-    test_stirlingpdf(methods, min_target_codes, worker)
-    test_newpipe(methods, min_target_codes, worker)
+    # test_jedis(methods, min_target_codes, worker)
+    # test_stirlingpdf(methods, min_target_codes, worker)
+    # test_newpipe(methods, min_target_codes, worker)
+    test_zookeeper(methods, min_target_codes, worker)
 
     # test_arthas(methods, min_target_codes, worker)
