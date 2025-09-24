@@ -439,10 +439,10 @@ class GradleTester(Tester):
 
 
 class GradleTesterInDocker(GradleTester):
-    def __init__(self, project_config: ProjectConfig, max_worker,exclude_args=[], modules=[], workspace="/workspace"):
+    def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
         super().__init__(project_config)
         self.workspace = workspace
-        self.exclude_args = exclude_args
+        self.args = args
         self.modules = modules
         self.max_worker = max_worker
         self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
@@ -532,12 +532,14 @@ class GradleTesterInDocker(GradleTester):
                 r.compilable = new_execution_result.is_compilable
                 r.test_passed = test_passed
             else:
-                # 把 group 拆成两半，递归检测
-                # mid = len(group) // 2
-                # self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
-                # self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
-                for pair in group:
-                    self._test_pair_group(result_manager, [pair], data, original_execution_result)
+                if len(group) > 4:
+                    # 把 group 拆成两半，递归检测
+                    mid = len(group) // 2
+                    self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
+                    self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+                else:
+                    for pair in group:
+                        self._test_pair_group(result_manager, [pair], data, original_execution_result)
         result_manager.update_all()
         
         
@@ -586,7 +588,7 @@ class GradleTesterInDocker(GradleTester):
             # "-v", f"{os.path.join(self.abs_project_path, '.gradle')}:{workspace}/.gradle",
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
-            *self.exclude_args
+            *self.args
         ]
             print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
             ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -598,8 +600,8 @@ class GradleTesterInDocker(GradleTester):
 
 
 class MvnTesterInDokcer(GradleTesterInDocker):
-    def __init__(self, project_config: ProjectConfig, max_worker,exclude_args=[], modules=[], workspace="/workspace"):
-        super().__init__(project_config, max_worker, exclude_args, modules, workspace)
+    def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
+        super().__init__(project_config, max_worker, args, modules, workspace)
         
     def execute_test(self, volumes) -> CompletedProcess:
         volume_args = []
@@ -614,7 +616,7 @@ class MvnTesterInDokcer(GradleTesterInDocker):
             *volume_args,
             "-w", workspace,
             f"{self.project_config.name.lower()}-image",
-            *self.exclude_args
+            *self.args
         ]
             print(f"[Thread-{id}] Running tests: {' '.join(cmd)}")
             ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -709,7 +711,7 @@ def test_rxjava(methods, min_target_codes, worker):
     tester.test(methods, min_target_codes)
 
 def test_stirlingpdf(methods, min_target_codes, worker):
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,exclude_args=["-x", "check"], modules=["app"])
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,args=["-x", "check"], modules=["app"])
     tester.test(methods, min_target_codes)
     
 def test_jedis(methods, min_target_codes, worker):
@@ -758,7 +760,7 @@ def test_jedis(methods, min_target_codes, worker):
 
     
 def test_newpipe(methods, min_target_codes, worker):
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), worker, exclude_args=["-x", "runCheckstyle"], modules=["app"])
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("NewPipe"), worker, args=["./gradlew", "testDebugUnitTest", "-x", "runCheckstyle"], modules=["app"])
     tester.test(methods, min_target_codes)
 
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
