@@ -2,7 +2,8 @@
 setlocal
 
 REM 定义长度列表
-set lengths=200 400 800 1000
+set lengths=200 
+REM 400 800 1000
 
 REM 遍历每个长度
 for %%L in (%lengths%) do (
