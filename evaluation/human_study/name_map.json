@@ -1,0 +1,3002 @@
+{
+  "task1": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task2": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "original_src.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task3": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "original_src.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task4": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "egsi.java",
+      "D": "original_src.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task5": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task6": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task7": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "egsi.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task8": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task9": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "codebuff.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task10": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "egsi.java",
+      "E": "original_src.java"
+    }
+  },
+  "task11": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task12": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task13": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task14": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task15": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "codebuff.java",
+      "C": "original_src.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task16": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task17": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "egsi.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task18": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "codebuff.java",
+      "C": "original_src.java",
+      "D": "gpt-4.1.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task19": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task20": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java",
+      "C": "gpt-4.1.java",
+      "D": "egsi.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task21": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "gpt-4.1.java",
+      "E": "egsi.java"
+    }
+  },
+  "task22": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task23": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task24": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task25": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "gpt-4.1.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task26": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "egsi.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task27": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task28": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task29": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "egsi.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task30": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task31": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "codebuff.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task32": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "codebuff.java",
+      "C": "original_src.java",
+      "D": "egsi.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task33": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java",
+      "C": "gpt-4.1.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task34": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task35": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task36": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task37": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task38": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "codebuff.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task39": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task40": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "egsi.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task41": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task42": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "egsi.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task43": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "egsi.java"
+    }
+  },
+  "task44": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "egsi.java",
+      "D": "codebuff.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task45": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java",
+      "C": "codebuff.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task46": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task47": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task48": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "egsi.java",
+      "D": "gpt-4.1.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task49": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task50": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java",
+      "C": "gpt-4.1.java",
+      "D": "egsi.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task51": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task52": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "codebuff.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task53": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "egsi.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task54": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task55": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task56": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task57": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java",
+      "C": "egsi.java",
+      "D": "codebuff.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task58": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "original_src.java"
+    }
+  },
+  "task59": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task60": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task61": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task62": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "codebuff.java",
+      "C": "gpt-4.1.java",
+      "D": "egsi.java",
+      "E": "original_src.java"
+    }
+  },
+  "task63": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task64": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task65": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task66": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task67": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task68": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "codebuff.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task69": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task70": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task71": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task72": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "egsi.java",
+      "E": "original_src.java"
+    }
+  },
+  "task73": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "egsi.java"
+    }
+  },
+  "task74": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task75": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "original_src.java",
+      "D": "gpt-4.1.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task76": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "codebuff.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task77": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "codebuff.java",
+      "D": "gpt-4.1.java",
+      "E": "original_src.java"
+    }
+  },
+  "task78": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "gpt-4.1.java",
+      "C": "codebuff.java",
+      "D": "original_src.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task79": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "codebuff.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "egsi.java"
+    }
+  },
+  "task80": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "original_src.java",
+      "D": "codebuff.java",
+      "E": "gpt-4.1.java"
+    }
+  },
+  "task81": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task82": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task83": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "original_src.java"
+    }
+  },
+  "task84": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "gpt-4.1.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task85": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "original_src.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task86": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "codebuff.java",
+      "E": "original_src.java"
+    }
+  },
+  "task87": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "original_src.java",
+      "D": "gpt-4.1.java",
+      "E": "egsi.java"
+    }
+  },
+  "task88": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "original_src.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task89": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "egsi.java",
+      "C": "original_src.java",
+      "D": "codebuff.java",
+      "E": "deepseek-r1-0528--free.java"
+    }
+  },
+  "task90": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "original_src.java"
+    }
+  },
+  "task91": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "codebuff.java",
+      "E": "egsi.java"
+    }
+  },
+  "task92": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "codebuff.java",
+      "C": "gpt-4.1.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task93": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "egsi.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task94": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "egsi.java",
+      "C": "gpt-4.1.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "original_src.java"
+    }
+  },
+  "task95": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "gpt-4.1.java",
+      "C": "original_src.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "egsi.java"
+    }
+  },
+  "task96": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "original_src.java",
+      "E": "egsi.java"
+    }
+  },
+  "task97": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java",
+      "C": "gpt-4.1.java",
+      "D": "deepseek-r1-0528--free.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task98": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "gpt-4.1.java",
+      "C": "deepseek-r1-0528--free.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task99": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "egsi.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "codebuff.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "deepseek-r1-0528--free.java",
+      "C": "original_src.java",
+      "D": "egsi.java",
+      "E": "codebuff.java"
+    }
+  },
+  "task100": {
+    "1-1": {
+      "Target": "Target.java",
+      "A": "codebuff.java",
+      "B": "original_src.java"
+    },
+    "1-2": {
+      "Target": "Target.java",
+      "A": "gpt-4.1.java",
+      "B": "original_src.java"
+    },
+    "1-3": {
+      "Target": "Target.java",
+      "A": "original_src.java",
+      "B": "deepseek-r1-0528--free.java"
+    },
+    "1-4": {
+      "Target": "Target.java",
+      "A": "egsi.java",
+      "B": "original_src.java"
+    },
+    "2": {
+      "Target": "Target.java",
+      "A": "deepseek-r1-0528--free.java",
+      "B": "codebuff.java",
+      "C": "original_src.java",
+      "D": "gpt-4.1.java",
+      "E": "egsi.java"
+    }
+  }
+}

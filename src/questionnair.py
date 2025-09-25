@@ -441,10 +441,9 @@ def questionnaire_filter(methods, min_target_codes, project_names, line_range):
     
     return new_pair_dict
 
-def get_forsee_label(filepath, project_names, methods,min_target_lines, output_path):
-    # 读取 JSON 文件
-    with open(filepath, "r", encoding="utf-8") as f:
-        task_map = json.load(f)
+def add_forsee_label_for_task(filepath, project_names, methods, min_target_lines):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        tasks = [json.loads(line) for line in f]
     
     result_map = {}
     
@@ -453,20 +452,23 @@ def get_forsee_label(filepath, project_names, methods,min_target_lines, output_p
         eval_results_map[method] = EvalResults(method, min_target_lines, "across-project" in project_names)
         
     pair_dict = create_pair_dict(min_target_lines, project_names)
-    pair_dict = {p.pair_id : p for p in pair_dict.values() if p.pair_id in task_map.values()}
-   
-    for task, pair_id in task_map.items():
-        pair = pair_dict[pair_id]
-        project_name, target_author, src_author, src_id = pair.project_name, pair.target_author, pair.src_author, pair.src_id
+    pair_dict = {p.src_author+p.target_author+p.src_id : p.pair_id for p in pair_dict.values()}
+    for t in tasks:
+        t["pair_id"] = pair_dict[t["src_author"]+t["target_author"]+t["src_id"]]
+    
+    project_name = "across-project"
+    for task in tasks:
+        pair_id = task["pair_id"]
         forsee_map = {}
         for method, eval_reuslts in eval_results_map.items():
             result = eval_reuslts.get_result(project_name, pair_id)
             forsee_map[method] = result.transform_type
             
-        result_map[task] = forsee_map
+        task["forsee_result"] = forsee_map
     
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(result_map, f, ensure_ascii=False, indent=4)  # indent=4 使文件更易读
+    with open(filepath, "w", encoding="utf-8") as f:
+        for task in tasks:
+            f.write(json.dumps(task) + "\n")
         
 
 def draw_success_matrix(methods, min_target_lines):
@@ -783,6 +785,11 @@ methods = [
 min_target_codes = 200
 project_names = ["across-project"]
 output_dir = os.path.join(TMP_DATA, "code-materials")
+
+
+# add_forsee_label_for_task("tasks.jsonl", project_names, methods, min_target_codes)
+# exit(0)
+
 pair_dict = create_pair_dict(min_target_codes, project_names)
 task_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
 # pair_dict = questionnaire_filter(methods, min_target_codes, project_names, [1,100])
@@ -793,9 +800,9 @@ task_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
 #     srcs.add(t.src_author + t.src_id)
 # pair_dict = {k:v for k, v in pair_dict.items() if k not in task_dict and v.src_author + v.src_id not in srcs}
 
-pair_dict = get_failed_pairs(pair_dict, min_target_codes, "codebuff")
+# pair_dict = get_failed_pairs(pair_dict, min_target_codes, "codebuff")
 
-# pair_dict = task_dict
+pair_dict = task_dict
 print_statistic(methods, pair_dict, min_target_codes)
 
 
@@ -803,7 +810,6 @@ print_statistic(methods, pair_dict, min_target_codes)
 # style_trigger_analysis("egsi", min_target_codes, False)
 save_code(methods, min_target_codes, project_names, output_dir, pair_dict, lambda x:True)
 
-# get_forsee_label("task_mapping.json", project_names, methods, min_target_codes, "forsee_result.json")
 
 # draw_success_matrix(methods, min_target_codes)
 # questionnaire_sample(methods,project_names,  min_target_codes, 2, "../tmp-data/code-materials")

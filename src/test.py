@@ -338,9 +338,9 @@ class GradleTester(Tester):
             return
 
         # 一次性注入整个 group
-        backups = self._inject_to_src(result_manager, group, data, self.project_config.repo_path)
+        # backups = self._inject_to_src(result_manager, group, data, self.project_config.repo_path)
         ret = self.execute_test()
-        self.reset(backups)
+        # self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
             exit(0)
@@ -460,8 +460,9 @@ class GradleTesterInDocker(GradleTester):
         
     def test(self, methods, min_target_codes):
         print(f"Testing {self.project_config.name}...")
-        self.original_execution_result = self.get_execution_result_from_build([self.project_config.repo_path])
-        self.original_execution_result.is_compilable = True
+        if not self.original_execution_result:
+            self.original_execution_result = self.get_execution_result_from_build([self.project_config.repo_path])
+            self.original_execution_result.is_compilable = True
         print(f"original_execution_result: {self.original_execution_result}")
         
         executor = ThreadPoolExecutor(max_workers=self.max_worker)
@@ -506,9 +507,9 @@ class GradleTesterInDocker(GradleTester):
 
         # 一次性注入整个 group
         module_dirs = [volumn[0] for volumn in volumes]
-        backups = self._inject_to_src(result_manager, group, data, volume_root)
+        # backups = self._inject_to_src(result_manager, group, data, volume_root)
         ret = self.execute_test(volumes)
-        self.reset(backups)
+        # self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
             return
@@ -758,10 +759,14 @@ def test_jedis(methods, min_target_codes, worker):
     tester = MvnTesterInDokcer(project_config, worker)
     tester.test(methods, min_target_codes)
     
-def test_zookeeper():
+def test_zookeeper(methods, min_target_codes, worker):
+    # ExecutionResult(test_class='', is_compilable=True, tests=3171, failures=2, skipped=5, successful=0)
+    # modules=['zookeeper-contrib', 'zookeeper-it', 'zookeeper-jute', 'zookeeper-metrics-providers', 'zookeeper-recipes', 'zookeeper-server']
     project_config = ProjectConfigs().get_project_by_name("zookeeper")
-    tester = MvnTesterInDokcer(project_config, worker, modules=['zookeeper-contrib', 'zookeeper-it', 'zookeeper-jute', 'zookeeper-metrics-providers', 'zookeeper-recipes', 'zookeeper-server'])
+    tester = MvnTesterInDokcer(project_config, worker)
+    tester.original_execution_result = ExecutionResult(test_class='', is_compilable=True, tests=3171, failures=2, skipped=5, successful=0)
     tester.test(methods, min_target_codes)
+    
 
     
 def test_newpipe(methods, min_target_codes, worker):
@@ -784,7 +789,7 @@ if __name__ == "__main__":
     # lines = [200, 400, 800, 1000]
     line = int(sys.argv[1])
     min_target_codes = line
-    worker = 5
+    worker = 1
     
     # test_jedis(methods, min_target_codes, worker)
     # test_stirlingpdf(methods, min_target_codes, worker)
