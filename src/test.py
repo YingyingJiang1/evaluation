@@ -795,14 +795,15 @@ if __name__ == "__main__":
             # "claude-3.7-sonnet"
         ]
     
-    # lines = [200, 400, 800, 1000]
-    line = int(sys.argv[1])
-    min_target_codes = line
-    worker = 2
-    
-    test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
-    # test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava"])
-    # test_newpipe(methods, min_target_codes, worker)
-    # test_zookeeper(methods, min_target_codes, worker)
+    lines = [200, 400, 800, 1000]
+    # line = int(sys.argv[1])
+    for line in lines:
+        min_target_codes = line
+        worker = 2
+        
+        test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
+        # test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava"])
+        # test_newpipe(methods, min_target_codes, worker)
+        # test_zookeeper(methods, min_target_codes, worker)
 
-    # test_arthas(methods, min_target_codes, worker)
+        # test_arthas(methods, min_target_codes, worker)
