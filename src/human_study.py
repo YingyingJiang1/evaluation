@@ -8,10 +8,12 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import defaultdict, Counter
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from dataclasses import dataclass
 from statistics import median
+import matplotlib.pyplot as plt
+from path import HUMAN_STUDY_DIR
 
-HUMAN_STUDY_DIR = "../evaluation/human_study"
 name_map_file = os.path.join(HUMAN_STUDY_DIR, "name_map.json")
 tasks_jsonl_file = os.path.join(HUMAN_STUDY_DIR,"tasks.jsonl" )
 
@@ -27,7 +29,7 @@ class Item:
     syntax_score_map: dict[str, float]
     semantic_score_map: dict[str, float]
     test_question_results:list[str]
-    tele:str
+    # tele:str
     time:str
     forsee_result:dict[str, str]
 
@@ -53,7 +55,7 @@ def save_as_csv(results, output_file):
         "syntax_score_map",
         "semantic_score_map",
         "test_question_results",
-        "tele",
+        # "tele",
         "time",
         "forsee_result"
     ]
@@ -72,7 +74,7 @@ def save_as_csv(results, output_file):
                 "syntax_score_map": json.dumps(r.syntax_score_map, ensure_ascii=False),
                 "semantic_score_map": json.dumps(r.semantic_score_map, ensure_ascii=False),
                 "test_question_results": json.dumps(r.test_question_results, ensure_ascii=False),
-                "tele": r.tele,
+                # "tele": r.tele,
                 "time": r.time,
                 "forsee_result":json.dumps(r.forsee_result, ensure_ascii=False)
             })
@@ -95,6 +97,9 @@ def preprocess(input_dir, output_file):
     results:list[Item] = []
     cur_task_id = -1
 
+    times = []
+    teles = []
+
     # 遍历所有答卷文件
     for file in os.listdir(input_dir):
         if not file.endswith(".csv"):
@@ -110,12 +115,19 @@ def preprocess(input_dir, output_file):
                         row[k] = ",".join(v)
                     elif v is None:
                         row[k] = ""
-                
+               
                 task_id, view_id = -1, -1
                 tele = row.get("1.请输入您的支付宝账号（此账号仅用于支付报酬，不会泄露）", "").strip()
                 programming_experience = row.get("2.您的编程经验", "").split(".")[1]
                 konw_java = row.get("3.您之前是否接触或使用过Java", "").split(".")[1]
                 time = f'{int(row.get("答题时长", "")) / 60.0:.1f}min'
+                
+                float_time =  round(int(row.get("答题时长", "")) / 60.0, 1)
+                times.append(float_time)
+                teles.append(tele)
+                if float_time < 5:
+                    print(float_time)
+                    continue
 
                 # styles cared about
                 styles_cared_about = []
@@ -133,7 +145,6 @@ def preprocess(input_dir, output_file):
                             if "其他" in value:
                                 value = "其他"
                             styles_cared_about.append(value)
-                        
                     elif "此题请选择" in key:
                         test_question_results.append(row[key].split(".")[1])
                     else:
@@ -185,7 +196,7 @@ def preprocess(input_dir, output_file):
                             syntax_score_map=data["syntax_score_map"],
                             semantic_score_map=data["semantic_score_map"],
                             test_question_results=data["test_question_results"],
-                            tele=tele,
+                            # tele=tele,
                             time=time,
                             forsee_result=task_dict[task_id]["forsee_result"]
                         )
@@ -194,6 +205,18 @@ def preprocess(input_dir, output_file):
     results.sort(key=lambda r: int(r.task_id[4:]))
     # 保存结果
     save_as_csv(results, output_file)
+    
+    
+    times = np.array(times)
+    threash = 30
+    times1 = [t for t in times if t <= threash]
+    times2 = [t for t in times if t > threash]
+    print(f"<={threash}: {len(times1)}, >{threash}: {len(times2)}")
+    print(f"min:{min(times)}, max:{max(times)}, mean:{np.median(times)}")
+    print(times)
+    with open(os.path.join(os.path.dirname(output_file), "tele.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(teles))
+
 
 def process(input_csv: str, output_csv: str):
     # 读取 CSV 并解析 JSON 字段
@@ -235,7 +258,7 @@ def process(input_csv: str, output_csv: str):
                 combined_success[k] = Counter(values).most_common(1)[0][0]
 
         # score_map：同一个 key 取中位数
-        def average_score(map_name):
+        def median_score(map_name):
             combined = {}
             all_keys = set(k for item in group for k in item[map_name].keys())
             for k in all_keys:
@@ -248,9 +271,9 @@ def process(input_csv: str, output_csv: str):
         merged_items.append({
             "task_id": task_id,
             "success_map": combined_success,
-            "format_score_map": average_score("format_score_map"),
-            "syntax_score_map": average_score("syntax_score_map"),
-            "semantic_score_map": average_score("semantic_score_map"),
+            "format_score_map": median_score("format_score_map"),
+            "syntax_score_map": median_score("syntax_score_map"),
+            "semantic_score_map": median_score("semantic_score_map"),
             "forsee_result":task_dict[task_id]["forsee_result"]
         })
 
@@ -391,11 +414,6 @@ def cal_success_rate(input_csv: str, output_csv: str):
     return records
 
 
-import pandas as pd
-import numpy as np
-import json
-import matplotlib.pyplot as plt
-
 def plot_score_radar(input_csv: str, output_file: str):
     """
     绘制方法在 Format、Syntax、Semantic 三个维度的雷达图
@@ -533,7 +551,7 @@ def plot_overall_success_rate(output_file: str):
     methods = ["egsi", "codebuff", "deepseek-r1-0528--free", "gpt-4.1"]
 
     # Forsee 结果
-    forsee_rates = [43.33, 45.0, 30.0, 48.33]
+    forsee_rates = [41.38, 46.55, 31.03, 46.55]
 
     # Human Study 结果
     human_rates = [57.14, 43.64, 51.92, 58.49]
@@ -555,12 +573,134 @@ def plot_overall_success_rate(output_file: str):
     plt.savefig(output_file, format="png")
     plt.close()
     
+import csv
+import json
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+def evaluate_forsee(input_csv: str, output_csv: str, positive_label=True, flag="all"):
+    """
+    从 CSV 文件读取任务数据，计算 Forsee 对各方法的预测指标，并写入 CSV。
+    CSV 文件必须包含 success_map 和 forsee_result 字段，存成 JSON 字符串。
+    """
+    method_labels = {}  # 人类真实标签
+    method_preds = {}   # Forsee预测标签
+
+    with open(input_csv, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            success_map = json.loads(row["success_map"])
+            forsee_result = json.loads(row["forsee_result"])
+
+            for method, human_label in success_map.items():
+                forsee_label_str = forsee_result.get(method, "Failure-Modification")
+                human_label_int = 1 if human_label == positive_label else 0
+                forsee_positive_label = "Success"  if positive_label == True else "Failure-Modification"
+                forsee_label_int = 1 if forsee_label_str == forsee_positive_label else 0
+
+                if method not in method_labels:
+                    method_labels[method] = []
+                    method_preds[method] = []
+                    
+                if flag == "all" or (flag=="success" and human_label_int == 1) or (flag=="failure" and human_label_int == 1):
+                    method_labels[method].append(human_label_int)
+                    method_preds[method].append(forsee_label_int)
+    sorted_methods = sorted(method_labels.keys())
+    results = []
+    for method in sorted_methods:
+        y_true = method_labels[method]
+        y_pred = method_preds[method]
+        acc = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred, zero_division=0)
+        recall = recall_score(y_true, y_pred, zero_division=0)
+        f1 = f1_score(y_true, y_pred, zero_division=0)
+        # success_rate = sum(y_pred) / len(y_pred)
+
+        results.append({
+            "Method": method,
+            "Accuracy": acc,
+            "Precision": precision,
+            "Recall": recall,
+            "F1": f1,
+            # "Forsee_Success_Rate": success_rate
+        })
+
+    # 写入 CSV
+    keys = ["Method", "Accuracy", "Precision", "Recall", "F1", "Forsee_Success_Rate"]
+    with open(output_csv, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=keys)
+        writer.writeheader()
+        for row in results:
+            writer.writerow(row)
+
+import pandas as pd
+import ast
+
+# 输出人类判断失败但是forsee判断成功的
+
+def find_false_positives(file_path: str, method: str = "codebuff"):
+    
+    def parse_str(s: str):
+        """自动解析 success_map / forsee_result 字符串"""
+        try:
+            return ast.literal_eval(s)   # Python dict 格式 {'a': True}
+        except Exception:
+            return json.loads(s.replace("'", '"'))  # JSON 格式 {"a": true}
+    df = pd.read_csv(file_path)
+    false_tasks = {"format": [], "syntax": [], "semantic": []}
+
+
+    for _, row in df.iterrows():
+        success_map = parse_str(row["success_map"])
+        forsee_result = parse_str(row["forsee_result"])
+
+        human = success_map.get(method)
+        forsee = forsee_result.get(method)
+
+        # 转换 forsee 的结果到 True/False
+        if forsee == "Success":
+            forsee_bool = True
+        elif forsee == "Failure-Modification":
+            forsee_bool = False
+        else:
+            continue
+
+        # 人类认为失败 & forsee 认为成功
+        if human is False and forsee_bool is True:
+            false_tasks["format"].append(json.loads(row["format_score_map"])["original_src"])
+            false_tasks["syntax"].append(json.loads(row["syntax_score_map"])["original_src"])
+            false_tasks["semantic"].append(json.loads(row["semantic_score_map"])["original_src"])
+
+
+    for k, v in false_tasks.items():
+        print(k)
+        print(np.median(list(v)))
+
+    print(false_tasks)
+ 
+def merge_csv_files(input_dir, output_file):
+    # 存储所有 DataFrame
+    dfs = []
+    
+    # 遍历目录中的所有 CSV 文件
+    for file in os.listdir(input_dir):
+        if file.endswith(".csv"):
+            file_path = os.path.join(input_dir, file)
+            df = pd.read_csv(file_path)
+            dfs.append(df)
+    
+    # 合并所有 DataFrame
+    merged_df = pd.concat(dfs, ignore_index=True)
+    
+    # 保存为新的 CSV 文件
+    merged_df.to_csv(output_file, index=False, encoding="utf-8-sig")
+ 
 if __name__ == "__main__":
     results_dir = os.path.join(HUMAN_STUDY_DIR, "results")
     raw_data_path = os.path.join(results_dir, "processed_data.csv")
     data_path = os.path.join(results_dir, "data.csv")
     questionnar_data_dir = os.path.join(HUMAN_STUDY_DIR, "data")
+    
+    find_false_positives(data_path)
     
     preprocess(questionnar_data_dir, raw_data_path)
     process(raw_data_path, data_path)
@@ -573,6 +713,13 @@ if __name__ == "__main__":
     
     plot_success_rate(success_rate_data, os.path.join(graphs_dir, "success_rate.png"))
     plot_overall_success_rate(os.path.join(graphs_dir, "overall_success_rate.png"))
+    
+    # 计算forsee对于各个方法成功率和失败率的预测结果
+    evaluate_forsee(data_path, os.path.join(results_dir, "forsee_metrics.csv"))
+    evaluate_forsee(data_path, os.path.join(results_dir, "forsee_success_metrics.csv"),True, "success")
+    evaluate_forsee(data_path, os.path.join(results_dir, "forsee_failure_metrics.csv"), False, "failure")
+
+    merge_csv_files(questionnar_data_dir, "merged_data.csv")
     
     methods = [
             "egsi",

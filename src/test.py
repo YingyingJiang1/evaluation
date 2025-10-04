@@ -356,7 +356,7 @@ class GradleTester(Tester):
             if len(group) == 1:
                 # 缩小到单个 pair，直接标记失败
                 r = result_manager.get_result_by_id(group[0].pair_id)
-                r.compilable = False
+                r.compilable = new_execution_result.is_compilable
                 r.test_passed = False
             else:
                 # 把 group 拆成两半，递归检测
@@ -715,7 +715,7 @@ def test_stirlingpdf(methods, min_target_codes, worker):
     tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,args=["-x", "check"], modules=["app"])
     tester.test(methods, min_target_codes)
     
-def test_jedis(methods, min_target_codes, worker):
+def test_jedis(methods, min_target_codes, worker, args):
     # 执行：docker run -p 6379:6379 -it redis/redis-stack:latest
     # --- 启动 Redis ---
     def is_redis_running():
@@ -756,7 +756,7 @@ def test_jedis(methods, min_target_codes, worker):
 
     # --- 初始化测试 ---
     project_config = ProjectConfigs().get_project_by_name("jedis")
-    tester = MvnTesterInDokcer(project_config, worker)
+    tester = MvnTesterInDokcer(project_config, worker, args)
     tester.test(methods, min_target_codes)
     
 def test_zookeeper(methods, min_target_codes, worker):
@@ -789,11 +789,11 @@ if __name__ == "__main__":
     # lines = [200, 400, 800, 1000]
     line = int(sys.argv[1])
     min_target_codes = line
-    worker = 1
+    worker = 2
     
-    # test_jedis(methods, min_target_codes, worker)
+    test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
     # test_stirlingpdf(methods, min_target_codes, worker)
     # test_newpipe(methods, min_target_codes, worker)
-    test_zookeeper(methods, min_target_codes, worker)
+    # test_zookeeper(methods, min_target_codes, worker)
 
     # test_arthas(methods, min_target_codes, worker)

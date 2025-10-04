@@ -1,0 +1,4 @@
+Implement the target function according to its docstring and function signature.
+Ensure coding style of the generated code is consistent with the style of the given code context.
+Only output the generated function(including function head and function body), without any extra text or explanations.
+Note: Generate the target function with indentation matching its placement in the surrounding context.

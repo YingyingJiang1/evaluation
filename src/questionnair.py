@@ -59,7 +59,7 @@ def save_code(methods, min_target_codes, project_names,
     
     
     target_map = {}
-    with open('tasks.jsonl', 'r') as f:
+    with open(os.path.join(HUMAN_STUDY_DIR, 'tasks.jsonl'), 'r') as f:
         tasks = [json.loads(line) for line in f]
     for t in tasks:
         key = t["target_author"] + t["src_author"] + t["src_id"]
@@ -791,7 +791,7 @@ output_dir = os.path.join(TMP_DATA, "code-materials")
 # exit(0)
 
 pair_dict = create_pair_dict(min_target_codes, project_names)
-task_dict = questionnaire_filter_by_file("tasks.jsonl", pair_dict)
+task_dict = questionnaire_filter_by_file(os.path.join(HUMAN_STUDY_DIR, "tasks.jsonl"), pair_dict)
 # pair_dict = questionnaire_filter(methods, min_target_codes, project_names, [1,100])
 # pair_dict = filter_more_than_format(methods, min_target_codes, pair_dict, [0,100])
 
