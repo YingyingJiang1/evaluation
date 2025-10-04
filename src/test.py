@@ -214,7 +214,7 @@ class ExecutionCache:
 
 class Tester:
     JUnitLauncher = os.path.join("lib", "junit-platform-console-standalone-1.10.2.jar")
-    def __init__(self, project_config:ProjectConfig):
+    def __init__(self, project_config:ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
         self.env = Env()
         self.project_config = project_config
         self.execution_cache = {}
@@ -223,6 +223,17 @@ class Tester:
         self.class_path = None
         self.original_execution_result = None
         self.abs_project_path = os.path.abspath(self.project_config.repo_path)
+        
+        self.workspace = workspace
+        self.args = args
+        self.modules = modules
+        self.max_worker = max_worker
+        self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
+        
+        # 保存线程->固定id 映射
+        self.thread_id_map = {}
+        self.lock = threading.Lock()
+
         
     def test(self, methods, min_target_codes):
         print(f"Testing {self.project_config.name}...")
@@ -331,53 +342,73 @@ class Tester:
     
 
 class GradleTester(Tester):
-
-    def _test_pair_group(self, result_manager, group, data, original_execution_result):
+    def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
+        super().__init__(project_config, max_worker, args, modules, workspace)
+    def _test_pair_group(self, result_manager:ResultManager, group, data, original_execution_result):
+        id = self.get_worker_id()
+        volumes, volume_root = self.init_data(id)
+                
         # 如果 group 为空，直接返回
         if not group:
             return
+        method_name = os.path.basename(result_manager.output_file).replace(".jsonl", "")
+        print(f"Testing {method_name}'s group of size {len(group)} on worker {id}")
 
         # 一次性注入整个 group
-        # backups = self._inject_to_src(result_manager, group, data, self.project_config.repo_path)
-        ret = self.execute_test()
+        module_dirs = [volumn[0] for volumn in volumes]
+        # backups = self._inject_to_src(result_manager, group, data, volume_root)
+        ret = self.execute_test(volumes)
         # self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
-            exit(0)
-        new_execution_result = self.get_execution_result(ret, [self.project_config.repo_path])
+            return
+        is_compilable = ret and ret.returncode == 0
+        
+        if ret.returncode != 0:
+            print(f"{ret}")
 
-        if new_execution_result.is_compilable and self.is_test_passed(original_execution_result, new_execution_result):
+        
+        if is_compilable:
             # 整个 group 都成功
             for pair in group:
                 r = result_manager.get_result_by_id(pair.pair_id)
                 r.compilable = True
-                r.test_passed = True
+            if not self.only_test_compile():
+                new_execution_result = self.get_execution_result(ret, module_dirs)
+                test_passed = self.is_test_passed(original_execution_result, new_execution_result)
+                for pair in group:
+                    r = result_manager.get_result_by_id(pair.pair_id)
+                    r.test_passed = test_passed
         else:
             if len(group) == 1:
                 # 缩小到单个 pair，直接标记失败
                 r = result_manager.get_result_by_id(group[0].pair_id)
-                r.compilable = new_execution_result.is_compilable
+                r.compilable = False
                 r.test_passed = False
             else:
-                # 把 group 拆成两半，递归检测
-                mid = len(group) // 2
-                self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
-                self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+                if len(group) > 4:
+                    # 把 group 拆成两半，递归检测
+                    mid = len(group) // 2
+                    self._test_pair_group(result_manager, group[:mid], data, original_execution_result)
+                    self._test_pair_group(result_manager, group[mid:], data, original_execution_result)
+                else:
+                    for pair in group:
+                        self._test_pair_group(result_manager, [pair], data, original_execution_result)
+        result_manager.update_all()
+
                 
     def is_test_passed(self, original_execution_result:ExecutionResult, new_execution_result:ExecutionResult):
         return new_execution_result.is_compilable and new_execution_result.failures <= original_execution_result.failures
                 
-    def execute_test(self) -> CompletedProcess:
+    def execute_test(self, volumes) -> CompletedProcess:
         try:
-            cmd = [f"{os.path.join(os.path.abspath(self.project_config.repo_path), 'gradlew.bat')}", "test", "--no-daemon", "--rerun-tasks", 
-               "-x", "compileTestJava",
-               "-x", "spotlessJavaApply",
-               "-x", "spotlessCheck"
-            ]
-            print(f"run: {' '.join(cmd)}")
-            ret = subprocess.run(cmd, cwd=os.path.abspath(self.project_config.repo_path), capture_output=True, text=True)
-            # print(ret)
-            return ret
+            for v in volumes:
+                path = v[0]
+                cmd = [f"{os.path.join(path, 'gradlew.bat')}", *self.args]
+                print(f"run: {' '.join(cmd)}")
+                ret = subprocess.run(cmd, cwd=os.path.abspath(self.project_config.repo_path), capture_output=True, text=True)
+                # print(ret)
+                return ret
         except Exception as e:
             print(f"运行测试出错: {e}")
             return None
@@ -440,21 +471,39 @@ class GradleTester(Tester):
                 f.flush()
             # print(f"Reset {filepath}!")
             # input("Enter to continue...")
+            
+    def init_data(self, id):
+        def ignore_node_modules(dir, files):
+            return ['node_modules'] if 'node_modules' in files else []
+    
+         # 生成线程独立根目录
+        root = os.path.join(self.project_test_data, f"thread_{id}")
+        volumes = []
+        if self.modules:
+            for module in self.modules:
+                target_dir = os.path.join(root, module)
+                volumes.append([target_dir, f"{self.workspace}/{module}"])
+        else: # 挂载整个项目
+            target_dir = os.path.join(root)
+            volumes.append([target_dir, self.workspace])
+            
+        if os.path.exists(root):
+            return volumes, root
+        
+         # 拷贝源码到 workdir
+        if self.modules:
+            for module in self.modules:
+                target_dir = os.path.join(root, module)
+                shutil.copytree(os.path.join(self.project_config.repo_path, module), target_dir, ignore=ignore_node_modules)
+        else:
+            shutil.copytree(self.project_config.repo_path, root, ignore=ignore_node_modules)
+                    
+        return volumes, root
 
 
 class GradleTesterInDocker(GradleTester):
     def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
-        super().__init__(project_config)
-        self.workspace = workspace
-        self.args = args
-        self.modules = modules
-        self.max_worker = max_worker
-        self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
-        
-        # 保存线程->固定id 映射
-        self.thread_id_map = {}
-        self.lock = threading.Lock()
-
+        super().__init__(project_config, max_worker, args, modules, workspace)
     def get_worker_id(self):
         id = threading.get_ident()
         with self.lock:
@@ -550,38 +599,6 @@ class GradleTesterInDocker(GradleTester):
                     for pair in group:
                         self._test_pair_group(result_manager, [pair], data, original_execution_result)
         result_manager.update_all()
-        
-        
-        
-    def init_data(self, id):
-        def ignore_node_modules(dir, files):
-            return ['node_modules'] if 'node_modules' in files else []
-    
-         # 生成线程独立根目录
-        root = os.path.join(self.project_test_data, f"thread_{id}")
-        volumes = []
-        if self.modules:
-            for module in self.modules:
-                target_dir = os.path.join(root, module)
-                volumes.append([target_dir, f"{self.workspace}/{module}"])
-        else: # 挂载整个项目
-            target_dir = os.path.join(root)
-            volumes.append([target_dir, self.workspace])
-            
-        if os.path.exists(root):
-            return volumes, root
-        
-         # 拷贝源码到 workdir
-        if self.modules:
-            for module in self.modules:
-                target_dir = os.path.join(root, module)
-                shutil.copytree(os.path.join(self.project_config.repo_path, module), target_dir, ignore=ignore_node_modules)
-        else:
-            shutil.copytree(self.project_config.repo_path, root, ignore=ignore_node_modules)
-                    
-        return volumes, root
-        
-        
         
     def execute_test(self, volumes) -> CompletedProcess:
         volume_args = []
@@ -802,7 +819,7 @@ if __name__ == "__main__":
         worker = 2
         
         test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
-        # test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava"])
+        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava", "--no-daemon"])
         # test_newpipe(methods, min_target_codes, worker)
         # test_zookeeper(methods, min_target_codes, worker)
 
