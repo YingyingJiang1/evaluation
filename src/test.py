@@ -381,6 +381,10 @@ class GradleTester(Tester):
         except Exception as e:
             print(f"运行测试出错: {e}")
             return None
+        
+    
+    def only_test_compile(self):
+        return "compile" in self.args
     
     def get_execution_result(self, ret:CompletedProcess, module_paths:list[str]) -> ExecutionResult:
         
@@ -389,8 +393,8 @@ class GradleTester(Tester):
         if not result.is_compilable:
             return result
 
-        
-        return self.get_execution_result_from_build(module_paths)
+        if not self.only_test_compile():
+            return self.get_execution_result_from_build(module_paths)
         
         
     def get_execution_result_from_build(self, module_paths:list[str]):
@@ -513,25 +517,29 @@ class GradleTesterInDocker(GradleTester):
         if ret is None:
             print("无法执行测试，检查！")
             return
-        new_execution_result = self.get_execution_result(ret, module_dirs)
-        if ret.returncode == 0:
-            print(f"new_execution_result: {new_execution_result}")
-        else:
+        is_compilable = ret and ret.returncode == 0
+        
+        if ret.returncode != 0:
             print(f"{ret}")
 
-        test_passed = self.is_test_passed(original_execution_result, new_execution_result)
-        if new_execution_result.is_compilable and test_passed:
+        
+        if is_compilable:
             # 整个 group 都成功
             for pair in group:
                 r = result_manager.get_result_by_id(pair.pair_id)
                 r.compilable = True
-                r.test_passed = True
+            if not self.only_test_compile():
+                new_execution_result = self.get_execution_result(ret, module_dirs)
+                test_passed = self.is_test_passed(original_execution_result, new_execution_result)
+                for pair in group:
+                    r = result_manager.get_result_by_id(pair.pair_id)
+                    r.test_passed = test_passed
         else:
             if len(group) == 1:
                 # 缩小到单个 pair，直接标记失败
                 r = result_manager.get_result_by_id(group[0].pair_id)
-                r.compilable = new_execution_result.is_compilable
-                r.test_passed = test_passed
+                r.compilable = False
+                r.test_passed = False
             else:
                 if len(group) > 4:
                     # 把 group 拆成两半，递归检测
@@ -711,8 +719,9 @@ def test_rxjava(methods, min_target_codes, worker):
     tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("RxJava"), worker, modules)
     tester.test(methods, min_target_codes)
 
-def test_stirlingpdf(methods, min_target_codes, worker):
-    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,args=["-x", "check"], modules=["app"])
+def test_stirlingpdf(methods, min_target_codes, worker, args):
+    args.extend(["-x", "check"])
+    tester = GradleTesterInDocker(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,args=args, modules=["app"])
     tester.test(methods, min_target_codes)
     
 def test_jedis(methods, min_target_codes, worker, args):
@@ -792,7 +801,7 @@ if __name__ == "__main__":
     worker = 2
     
     test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
-    # test_stirlingpdf(methods, min_target_codes, worker)
+    # test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava"])
     # test_newpipe(methods, min_target_codes, worker)
     # test_zookeeper(methods, min_target_codes, worker)
 
