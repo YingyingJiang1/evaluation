@@ -1,8 +1,14 @@
+import os
+import socket
+import time
 from config import ProjectConfigs, ProjectConfig
 from transform import ResultManager
 from dataset import Data, MethodWrapper, TransformPair
 from utils import *
-
+from eval import create_pair_dict
+from author_tagger import AuthorIDMap
+from path import TEST_DIR
+from test1 import MvnTesterInDokcer
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
@@ -75,17 +81,48 @@ class TestResult:
 
 
 class Tester:
-    def __init__(self, project_config:ProjectConfig, max_worker,args=[], workspace="/workspace"):
+    def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
         self.project_config = project_config
         self.max_worker = max_worker
+
         self.args = args
+        self.modules = modules
         self.thread_id_map = {}
         self.lock = threading.Lock()
         self.test_data_dir = os.path.join(TEST_DIR, "test-data")
+        self.project_test_data = os.path.join(self.test_data_dir, self.project_config.name.lower())
         self.original_execution_result = None
         self.abs_project_path = os.path.abspath(self.project_config.repo_path)
         self.only_test_compile = True
 
+
+    
+    def get_pairs(self):
+        id_map = AuthorIDMap()
+        id_map.load()
+        author_ids = id_map.get_author_ids(self.project_config.name)
+        pair_dict = create_pair_dict(200, ["across-project"])
+        return [p for p in pair_dict.values() if p.src_author in author_ids]
+    
+        
+    def get_pair_group(self, pairs):
+        groups = []  # 存放所有合法 group
+
+        for pair in pairs:
+            placed = False
+            # 遍历已有 group，看是否可以放入
+            for group in groups:
+                # 如果 group 中没有相同 src_id，就可以加入
+                if all(existing.src_id != pair.src_id for existing in group):
+                    group.append(pair)
+                    placed = True
+                    break
+            
+            # 如果没有合法 group，可以新建一个 group
+            if not placed:
+                groups.append([pair])
+        
+        return groups
         
     def test(self, methods, min_target_codes):
         print(f"Testing {self.project_config.name}...")
