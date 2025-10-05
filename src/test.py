@@ -132,7 +132,7 @@ class Tester:
             for p in group:
                 if self.only_test_compile:
                     r = result_manager.get_result_by_id(p.pair_id)
-                    if r.compilable == "":
+                    if r and r.compilable == "":
                         target_group.append(p)
                 else:
                     if p.pair_id not in coveraged_pairs:
@@ -445,7 +445,13 @@ def test_jedis(methods, min_target_codes, worker, args, only_test_compile=True):
     
 def test_newpipe(methods, min_target_codes, worker, args, only_test_compile=True):
     args.extend([ "-x", "runCheckstyle"])
-    tester = GradleTester(ProjectConfigs().get_project_by_name("NewPipe"), worker, args=args, modules=["app"])
+    tester = GradleTester(ProjectConfigs().get_project_by_name("NewPipe"), worker, args=args, modules=[])
+    tester.only_test_compile = only_test_compile
+    tester.test(methods, min_target_codes)
+    
+def test_rxjava(methods, min_target_codes, worker, args, only_test_compile=True):
+    args.extend(["--no-daemon"])
+    tester = GradleTester(ProjectConfigs().get_project_by_name("RxJava"), worker, modules=[])
     tester.only_test_compile = only_test_compile
     tester.test(methods, min_target_codes)
     
@@ -495,6 +501,36 @@ def output_test_result(line_threshold, methods, output_file):
         # 空行分隔不同阈值
         writer.writerow([])
 
+
+def test_zookeeper(methods, min_target_codes, worker, args, only_test_compile=False):
+    args.extend(["-Dmaven.test.failure.ignore=true", "-Dmaven.javadoc.skip=true"])
+    project_config = ProjectConfigs().get_project_by_name("zookeeper")
+    tester = MvnTester(project_config, worker, args)
+    tester.only_test_compile = only_test_compile
+    tester.test(methods, min_target_codes)
+    
+def test_arthas(methods, min_target_codes, worker, args, only_test_compile=False):
+    args.extend(["-Dmaven.test.failure.ignore=true"])
+    project_config = ProjectConfigs().get_project_by_name("arthas")
+    tester = MvnTester(project_config, worker, args)
+    tester.only_test_compile = only_test_compile
+    tester.test(methods, min_target_codes)
+    
+def test_compile(methods):
+    lines = [200, 400, 800, 1000]
+    # line = int(sys.argv[1])
+    for line in lines:
+        min_target_codes = line
+        worker = 2
+        
+        only_test_compile = True
+        test_jedis(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
+        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava"], only_test_compile)
+        test_newpipe(methods, min_target_codes, worker, ["./gradlew", "compileDebugJavaWithJavac"], only_test_compile)
+        test_rxjava(methods, min_target_codes, worker, ["./gradlew", "compileJava"], only_test_compile)
+        test_zookeeper(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
+        test_arthas(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
+
     
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
 if __name__ == "__main__":
@@ -509,17 +545,4 @@ if __name__ == "__main__":
             # "claude-3.7-sonnet"
         ]
     
-    lines = [200, 400, 800, 1000]
-    # line = int(sys.argv[1])
-    for line in lines:
-        min_target_codes = line
-        worker = 2
-        
-        goal = "test"
-        only_test_compile = False
-        test_jedis(methods, min_target_codes, worker, ["mvn", goal], only_test_compile)
-        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", goal], only_test_compile)
-        test_newpipe(methods, min_target_codes, worker, ["./gradlew", "testDebugUnitTest"], only_test_compile)
-        # test_zookeeper(methods, min_target_codes, worker)
-
-        # test_arthas(methods, min_target_codes, worker)
+    test_compile(methods)
