@@ -1,17 +1,21 @@
+import shutil
 from typing import List
 from dataclasses import dataclass, asdict
 import subprocess
 import os
+import shutil
+from pathlib import Path
 import xml.etree.ElementTree as ET
 
 import subprocess
 import json
 from typing import List, Dict
 
-from dataset import MethodWrapper, Data
+from dataset import MethodWrapper, Data, TransformPair
 from eval import create_pair_dict
 from config import ProjectConfigs, ProjectConfig
 from myparser import JavaTreeSitterParser
+from author_tagger import AuthorIDMap
 
 @dataclass
 class CoverageResult:
@@ -227,16 +231,10 @@ def get_first_line_off(code):
     method_start_line = method_node.start_point[0]  # 方法起始行
     first_stmt_line = first_stmt.start_point[0]     # 第一行代码
     return first_stmt_line - method_start_line
-
-def get_test_coverage_dataset(min_target_codelines, project_name, build_tool, across_project=True) -> Dict[tuple[str, str], List[str]]:
-    analyzer = CoverageAnalyzer(ProjectConfigs().get_project_by_name(project_name))
-    test_coverage_path =analyzer.analyze()
+def get_coverage_methods(project_name, test_coverages:List[CoverageResult]) -> Dict[tuple[str, str], List[str]]:
     
     # 获取所有相关的方法
-    if across_project:
-        pair_dict = create_pair_dict(min_target_codelines, ["across-project"])
-    else:
-        pair_dict = create_pair_dict(min_target_codelines, [project_name])
+    pair_dict = create_pair_dict(200, ["across-project"])
         
     method_map = {}
     project_methods_cache: Dict[str, Data] = {}
@@ -250,40 +248,140 @@ def get_test_coverage_dataset(min_target_codelines, project_name, build_tool, ac
         method = [m for m in method_data.get_data_list(author) if m.id == src_id][0]
         method_name, first_code_line = method.get_method_name(), method.get_line_range()[0] + get_first_line_off(method.get_code())
         top_class = os.path.basename(method.get_filepath()).replace(".java", "")
-        top_class = f"{method.get_package()}.{top_class}"
-        method_map[f"{top_class}#{method_name}#{first_code_line}"] = method
+        filepath = method.get_filepath()
+        # top_class = f"{method.get_package()}.{top_class}"
+        method_map[f"{filepath}#{method_name}#{first_code_line}"] = method
         
     result = {} # key: test_class, value:[instances of MethodWrapper]
-    test_coverages = load_test_coverages(test_coverage_path)
-    for coverages in test_coverages:
-        for qualified_class, method_info_list in coverages.coverage_methods.items():
+    keys = set()
+    for coverage in test_coverages:
+        for file_path, method_info_list in coverage.coverage_methods.items():
             for method_info in method_info_list:
-                for key in method_map:
-                    strs = key.split("#")
-                    if strs[0] in qualified_class and method_info == "#".join(strs[1:]):
-                        if coverages.test_class not in result:
-                            result[coverages.test_class] = []
-                        result[coverages.test_class].append(method_map[key])
-    # 修改map：key为(), value为list of test classes
-    # method_to_test_classes = {}
-    # for test_class, methods in result.items():
-    #     for m in methods:
-    #         key = (m.get_dominant_author(), m.get_id())
-    #         if key not in method_to_test_classes:
-    #             method_to_test_classes[key] = []
-    #         method_to_test_classes[key].append(test_class)
+                key = f"{file_path}#{method_info}"
+                keys.add(key)
+    
+    for k, m in method_map.items():
+        for k1 in keys:
+            strs = k.split("#")
+            strs1 = k1.split("#")
+            if strs1[0] in strs[0] and strs[1:] == strs1[1:]:
+                result[(m.get_dominant_author(), m.id)] = m
+                break
+    
     return result
         
+def parse_xml_report(xml_path) -> List[CoverageResult]:
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    
+    coverages = {}
 
-def analyze_coverages():
-    analyzer = CoverageAnalyzer(ProjectConfigs().get_project_by_name("Stirling-PDF"))
-    analyzer.analyze()
+    # 遍历每个 class
+    result = []
+    for cls in root.findall(".//class"):
+        qualified_class_name = cls.attrib["name"]
+        method_nodes = cls.findall("method")
+        if not method_nodes:
+            continue 
+        
+        file_path = cls.attrib["name"] + ".java"
+        methods = []
+        for method in method_nodes:
+            counter = method.find("counter[@type='METHOD']")
+            if counter is not None and int(counter.attrib.get("covered", "0")) > 0:
+                method_name = method.attrib["name"]
+                line_number = method.attrib["line"]
+                
+                if file_path not in coverages:
+                    coverages[file_path] = []
+                coverages[file_path].append(f"{method_name}#{line_number}")
+    result.append(CoverageResult(test_class="", coverage_methods=coverages))
+    return result
+
+# 输出被覆盖的pair id
+def analyze_coverages() -> List[TransformPair]:
+    jacoco_report_dir = "../test/jacoco-report"
+    corveraged_pair = []
+    pair_dict = create_pair_dict(200, ["across-project"])
+    for project in ProjectConfigs().projects:
+        # 获取当前项目的所有pair  
+        coverage_results = []
+        dir = os.path.join(jacoco_report_dir, project.name)
+        if not os.path.exists(dir):
+            continue
+        for subdir in os.listdir(dir):
+            jacoco_dir = os.path.join(dir, subdir)
+            for file in os.listdir(jacoco_dir):
+                if file.endswith(".xml"):
+                    coverage_results.extend(parse_xml_report(os.path.join(jacoco_dir, file)))
+                    
+        coveraged_methods = get_coverage_methods(project.name, coverage_results)
+        
+        keys = coveraged_methods.keys()
+        for p in pair_dict.values():
+            author, src_id = p.src_author, p.src_id
+            if (p.src_author, p.src_id) in keys:
+                corveraged_pair.append(p)
+    print(len(corveraged_pair))
+    return corveraged_pair
     
-    
-    
+import os
+import shutil
+from pathlib import Path
+
+import os
+import shutil
+from pathlib import Path
+
+def copy_jacoco_reports(root_path: str, output_dir: str):
+    root_path = Path(root_path).resolve()
+    output_dir = Path(output_dir).resolve()
+
+    if not root_path.exists():
+        print(f"Error: root path {root_path} does not exist.")
+        return
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    counter = 1  # 编号
+
+    # 遍历子目录
+    for subdir, dirs, files in os.walk(root_path):
+        subdir_path = Path(subdir)
+
+        # Gradle 和 Maven 常用 JaCoCo 路径
+        possible_report_dirs = [
+            subdir_path / "build" / "reports" / "jacoco",  # Gradle
+            subdir_path / "target" / "site" / "jacoco"     # Maven
+        ]
+
+        for report_dir in possible_report_dirs:
+            if report_dir.exists():
+                # 创建编号目录，不保留子模块名
+                target_dir = output_dir / f"jacoco{counter}"
+                target_dir.mkdir(parents=True, exist_ok=True)
+                counter += 1
+
+                # 拷贝 XML 文件
+                for report_file in report_dir.rglob("*.xml"):
+                    if report_file.is_file():
+                        relative_path = report_file.relative_to(report_dir)
+                        dest_file = target_dir / relative_path
+                        dest_file.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy(report_file, dest_file)
+                        print(f"Copied {report_file} -> {dest_file}")
+
+    print(f"All JaCoCo XML reports copied to {output_dir} with flat numbered directories.")
+
+
+
 
 
 if __name__== "__main__":
-    analyze_coverages()
-    
+    output_dir = "../test/jacoco-report"
+    project_name = "newpipe"
+    # copy_jacoco_reports(os.path.join("../projects", project_name), os.path.join(output_dir, project_name))
+    pairs = analyze_coverages()
+    with open("coverage_pairs.txt", "w") as f:
+        for pair in pairs:
+            f.write(f"{pair.pair_id}\n")
     

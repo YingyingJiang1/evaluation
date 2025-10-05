@@ -84,7 +84,7 @@ class Tester:
     def __init__(self, project_config: ProjectConfig, max_worker,args=[], modules=[], workspace="/workspace"):
         self.project_config = project_config
         self.max_worker = max_worker
-
+        self.workspace = workspace
         self.args = args
         self.modules = modules
         self.thread_id_map = {}
@@ -105,9 +105,9 @@ class Tester:
         return [p for p in pair_dict.values() if p.src_author in author_ids]
     
         
-    def get_pair_group(self, pairs):
+    def get_test_group(self, result_manager:ResultManager):
         groups = []  # 存放所有合法 group
-
+        pairs = self.get_pairs()
         for pair in pairs:
             placed = False
             # 遍历已有 group，看是否可以放入
@@ -122,7 +122,22 @@ class Tester:
             if not placed:
                 groups.append([pair])
         
-        return groups
+        # 过滤已经测试过或者无法测试到的pair
+        with open("coverage_pairs.txt", "r") as f:
+            coveraged_pairs = set(line.strip() for line in f.readlines())
+        print(coveraged_pairs)
+        untested_groups = []  
+        for group in groups:
+            target_group = []
+            for p in group:
+                if p.pair_id not in coveraged_pairs:
+                    continue
+                r = result_manager.get_result_by_id(p.pair_id)
+                if r and r.compilable != "" and r.compilable:
+                    target_group.append(p)
+            if target_group:
+                untested_groups.append(target_group)
+        return untested_groups
         
     def test(self, methods, min_target_codes):
         print(f"Testing {self.project_config.name}...")
@@ -132,19 +147,14 @@ class Tester:
         print(f"original_execution_result: {self.original_execution_result}")
         
         executor = ThreadPoolExecutor(max_workers=self.max_worker)
-        def _callback(fut):
-            result_manager.update_all()
-            
+        
         # 运行所有测试
         data = Data(self.project_config)
         original_execution_result = self.original_execution_result
         for method in methods:
             print(f"Test {method}: {len(self.get_pairs())} pairs")
-            pair_groups = self.get_pair_group(self.get_pairs())
             result_manager = ResultManager(create_transformation_result_jsonl_path(method, min_target_codes))
-            untested_groups = [[p for p in group if result_manager.get_result_by_id(p.pair_id) 
-                                and result_manager.get_result_by_id(p.pair_id).test_passed == ""
-                                and result_manager.get_result_by_id(p.pair_id).code] for group in pair_groups]  
+            untested_groups = self.get_test_group(result_manager)
             futures = []
             if untested_groups:  
                 for id, group in enumerate(untested_groups, start=1): 
@@ -161,7 +171,18 @@ class Tester:
         # shutil.rmtree(self.project_test_data, ignore_errors=True)
     
     def execute_test(self, volumes) -> CompletedProcess:
-        pass
+        try:
+            for v in volumes:
+                path = v[0]
+                cmd = self.args
+                print(f"run: {' '.join(cmd)}")
+                ret = subprocess.run(cmd, cwd=path, capture_output=True, text=True)
+                if ret is None or ret.returncode != 0:
+                    print(ret)
+                return ret
+        except Exception as e:
+            print(f"运行测试出错: {e}")
+            return None
     
     
     def _test_pair_group(self, result_manager:ResultManager, group, data, original_execution_result):
@@ -365,12 +386,12 @@ class MvnTester(Tester):
     
     
 def test_stirlingpdf(methods, min_target_codes, worker, args, only_test_compile=True):
-    args.extend(["-x", "check"])
+    args.extend(["--no-daemon", "-x", "compileTestJava", "-x", "spotlessJavaApply","-x", "spotlessCheck", "-x", "check"])
     tester = GradleTester(ProjectConfigs().get_project_by_name("Stirling-PDF"), worker,args=args, modules=[])
     tester.only_test_compile = only_test_compile
     tester.test(methods, min_target_codes)
     
-def test_jedis(methods, min_target_codes, worker, args):
+def test_jedis(methods, min_target_codes, worker, args, only_test_compile=True):
     # 执行：docker run -p 6379:6379 -it redis/redis-stack:latest
     # --- 启动 Redis ---
     def is_redis_running():
@@ -410,8 +431,17 @@ def test_jedis(methods, min_target_codes, worker, args):
     wait_redis_ready()
 
     # --- 初始化测试 ---
+    args.extend(["-Dmaven.test.failure.ignore=true", "-Dformatter.skip=true"])
     project_config = ProjectConfigs().get_project_by_name("jedis")
-    tester = MvnTesterInDokcer(project_config, worker, args)
+    tester = MvnTester(project_config, worker, args)
+    tester.only_test_compile = only_test_compile
+    tester.test(methods, min_target_codes)
+
+    
+def test_newpipe(methods, min_target_codes, worker, args, only_test_compile=True):
+    args.extend([ "-x", "runCheckstyle"])
+    tester = GradleTester(ProjectConfigs().get_project_by_name("NewPipe"), worker, args=args, modules=["app"])
+    tester.only_test_compile = only_test_compile
     tester.test(methods, min_target_codes)
     
     
@@ -434,9 +464,11 @@ if __name__ == "__main__":
         min_target_codes = line
         worker = 2
         
-        # test_jedis(methods, min_target_codes, worker, ["mvn", "compile", "-Dformatter.skip=true"])
-        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "compileJava", "--no-daemon"])
-        # test_newpipe(methods, min_target_codes, worker)
+        goal = "test"
+        only_test_compile = False
+        test_jedis(methods, min_target_codes, worker, ["mvn", goal], only_test_compile)
+        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", goal], only_test_compile)
+        test_newpipe(methods, min_target_codes, worker, ["./gradlew", "testDebugUnitTest"], only_test_compile)
         # test_zookeeper(methods, min_target_codes, worker)
 
         # test_arthas(methods, min_target_codes, worker)
