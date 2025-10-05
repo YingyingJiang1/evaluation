@@ -1,3 +1,4 @@
+import csv
 import os
 import socket
 import time
@@ -8,7 +9,6 @@ from utils import *
 from eval import create_pair_dict
 from author_tagger import AuthorIDMap
 from path import TEST_DIR
-from test1 import MvnTesterInDokcer
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
@@ -130,17 +130,22 @@ class Tester:
         for group in groups:
             target_group = []
             for p in group:
-                if p.pair_id not in coveraged_pairs:
-                    continue
-                r = result_manager.get_result_by_id(p.pair_id)
-                if r and r.compilable != "" and r.compilable:
-                    target_group.append(p)
+                if self.only_test_compile:
+                    r = result_manager.get_result_by_id(p.pair_id)
+                    if r.compilable == "":
+                        target_group.append(p)
+                else:
+                    if p.pair_id not in coveraged_pairs:
+                        continue
+                    r = result_manager.get_result_by_id(p.pair_id)
+                    if r and r.compilable and r.test_passed == "":
+                        target_group.append(p)
             if target_group:
                 untested_groups.append(target_group)
         return untested_groups
         
     def test(self, methods, min_target_codes):
-        print(f"Testing {self.project_config.name}...")
+        print(f"Testing {self.project_config.name}, line_threshold = {min_target_codes}...")
         if not self.original_execution_result:
             self.original_execution_result = self.get_execution_result_from_build([self.project_config.repo_path])
             self.original_execution_result.is_compilable = True
@@ -152,11 +157,11 @@ class Tester:
         data = Data(self.project_config)
         original_execution_result = self.original_execution_result
         for method in methods:
-            print(f"Test {method}: {len(self.get_pairs())} pairs")
             result_manager = ResultManager(create_transformation_result_jsonl_path(method, min_target_codes))
             untested_groups = self.get_test_group(result_manager)
             futures = []
             if untested_groups:  
+                print(f"Test {method}: {len(self.get_pairs())} pairs")
                 for id, group in enumerate(untested_groups, start=1): 
                     # self._test_pair_group(result_manager, group, data, original_execution_result)
                     future = executor.submit(self._test_pair_group, result_manager, group, data, original_execution_result)
@@ -176,7 +181,7 @@ class Tester:
                 path = v[0]
                 cmd = self.args
                 print(f"run: {' '.join(cmd)}")
-                ret = subprocess.run(cmd, cwd=path, capture_output=True, text=True)
+                ret = subprocess.run(cmd, cwd=path, capture_output=True, text=True, shell=True)
                 if ret is None or ret.returncode != 0:
                     print(ret)
                 return ret
@@ -444,6 +449,52 @@ def test_newpipe(methods, min_target_codes, worker, args, only_test_compile=True
     tester.only_test_compile = only_test_compile
     tester.test(methods, min_target_codes)
     
+    
+def output_test_result(line_threshold, methods, output_file):
+    # 读取 coverage_pairs.txt
+    with open("coverage_pairs.txt", "r", encoding="utf-8") as f:
+        coveraged_pairs = [line.strip() for line in f]
+
+    results_summary = []
+
+    # 遍历每种方法
+    for m in methods:
+        result_manager = ResultManager(create_transformation_result_jsonl_path(m, line_threshold))
+        all_results = result_manager.get_all_results()
+
+        total = len(all_results)
+        if total == 0:
+            print(f"[WARN] No results for {m} at line_threshold={line_threshold}")
+            comp_rate = 0.0
+            test_rate = 0.0
+        else:
+            compilable_count = sum(1 for r in all_results if getattr(r, "compilable", False))
+            test_passed_count = sum(1 for r in all_results if getattr(r, "test_passed", False))
+
+            comp_rate = compilable_count / total
+            test_rate = test_passed_count / total
+
+        results_summary.append({
+            "Method": m,
+            "Compilation Pass Rate": f"{comp_rate:.2%}",
+            "Test Pass Rate": f"{test_rate:.2%}"
+        })
+
+    # 写入 CSV 文件
+    with open(output_file, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+
+        # 写入分隔行
+        writer.writerow([f"Line Threshold: {line_threshold}"])
+        writer.writerow(["Method", "Compilation Pass Rate", "Test Pass Rate"])
+
+        # 写入结果
+        for row in results_summary:
+            writer.writerow([row["Method"], row["Compilation Pass Rate"], row["Test Pass Rate"]])
+
+        # 空行分隔不同阈值
+        writer.writerow([])
+
     
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
 if __name__ == "__main__":
