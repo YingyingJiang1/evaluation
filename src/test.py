@@ -560,8 +560,8 @@ if __name__ == "__main__":
             # "claude-3.7-sonnet"
         ]
     lines = [200, 400, 800, 1000]
-    for line in lines:
-        output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
-    # test_compile(methods)
+    # for line in lines:
+    #     output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
+    test_compile(methods)
     
     # reset_test(methods, "arthas")
