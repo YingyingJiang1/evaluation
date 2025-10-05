@@ -1,0 +1,28 @@
+Line Threshold: 200
+Method,Compilation Pass Rate,Test Pass Rate
+deepseek-r1-0528--free,93.47%,88.01%
+gpt-4.1,98.90%,98.39%
+codebuff,93.73%,97.24%
+egsi,99.72%,99.60%
+
+Line Threshold: 400
+Method,Compilation Pass Rate,Test Pass Rate
+deepseek-r1-0528--free,100.00%,100.00%
+gpt-4.1,100.00%,100.00%
+codebuff,100.00%,100.00%
+egsi,100.00%,100.00%
+
+Line Threshold: 800
+Method,Compilation Pass Rate,Test Pass Rate
+deepseek-r1-0528--free,100.00%,100.00%
+gpt-4.1,100.00%,100.00%
+codebuff,100.00%,100.00%
+egsi,100.00%,100.00%
+
+Line Threshold: 1000
+Method,Compilation Pass Rate,Test Pass Rate
+deepseek-r1-0528--free,100.00%,100.00%
+gpt-4.1,100.00%,100.00%
+codebuff,100.00%,25.00%
+egsi,100.00%,100.00%
+

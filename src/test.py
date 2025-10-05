@@ -474,11 +474,11 @@ def output_test_result(line_threshold, methods, output_file):
             comp_rate = 0.0
             test_rate = 0.0
         else:
-            compilable_count = sum(1 for r in all_results if getattr(r, "compilable", False))
-            test_passed_count = sum(1 for r in all_results if getattr(r, "test_passed", False))
+            compilable_count = sum(1 for r in all_results if r.compilable)
+            test_passed_count = sum(1 for r in all_results if r.test_passed)
 
-            comp_rate = compilable_count / total
-            test_rate = test_passed_count / total
+            comp_rate = compilable_count / len([1 for r in all_results if r.compilable != ""])
+            test_rate = test_passed_count / len([1 for r in all_results if r.test_passed != ""])
 
         results_summary.append({
             "Method": m,
@@ -531,6 +531,21 @@ def test_compile(methods):
         test_zookeeper(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
         test_arthas(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
 
+def reset_test(methods, project_name):
+    author_id_map = AuthorIDMap()
+    author_id_map.load()
+    pair_dict = create_pair_dict(200, ["across-project"])
+    lines = [200, 400, 800, 1000]
+    # line = int(sys.argv[1])
+    for line in lines:
+        for m in methods:
+            result_manager = ResultManager(create_transformation_result_jsonl_path(m, line))
+            for r in result_manager.get_all_results():
+                p = pair_dict[("across-project", r.pair_id)]
+                if author_id_map.get_author_project(p.src_author) == project_name:
+                    r.compilable = ""
+                    r.test_passed = ""
+
     
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
 if __name__ == "__main__":
@@ -544,5 +559,9 @@ if __name__ == "__main__":
             "egsi",
             # "claude-3.7-sonnet"
         ]
+    lines = [200, 400, 800, 1000]
+    for line in lines:
+        output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
+    # test_compile(methods)
     
-    test_compile(methods)
+    # reset_test(methods, "arthas")

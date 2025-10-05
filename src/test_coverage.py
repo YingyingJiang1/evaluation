@@ -378,7 +378,7 @@ def copy_jacoco_reports(root_path: str, output_dir: str):
 
 if __name__== "__main__":
     output_dir = "../test/jacoco-report"
-    project_name = "RxJava"
+    project_name = "arthas"
     copy_jacoco_reports(os.path.join("../projects", project_name), os.path.join(output_dir, project_name))
     pairs = analyze_coverages()
     with open("coverage_pairs.txt", "w") as f:
