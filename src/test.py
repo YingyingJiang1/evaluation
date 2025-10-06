@@ -188,7 +188,60 @@ class Tester:
         except Exception as e:
             print(f"运行测试出错: {e}")
             return None
-    
+        
+    def _inject_to_src(self, result_manager:ResultManager, pairs, data:Data, target_root_dir):
+        backups = {} # key:filepath, value:code
+        file_to_methods: dict[str, list] = {}  # key: filepath, value: list of (start_line, end_line, new_code)
+
+        # 按 filepath 分类方法
+        for p in pairs:
+            m = [m for m in data.get_data_list(p.src_author) if m.id == p.src_id][0]
+            filepath = m.get_filepath()
+            start_line, end_line = m.get_line_range()
+            new_code = result_manager.get_result_by_id(p.pair_id).code
+            file_to_methods.setdefault(filepath, []).append((start_line, end_line, new_code))
+
+        # 对每个文件一次性处理
+        for filepath, methods in file_to_methods.items():
+            # print(f"Processing {filepath}")
+            # 读取原文件并备份
+            with open(filepath, "r", encoding="utf-8") as f:
+                original_lines = f.readlines()
+            
+            # 更新文件路径
+            reletive_path = filepath.replace(self.project_config.repo_path, "")
+            if reletive_path.startswith('/'):
+                reletive_path = reletive_path[1:]
+            filepath = os.path.join(target_root_dir, reletive_path)
+            
+            backups[filepath] = original_lines
+
+            methods = sorted(methods, key=lambda x: x[0])  # 按 start_line 升序
+            new_lines = []
+            cursor = 0
+
+            for start, end, new_code in methods:
+                s_idx, e_idx = start - 1, end
+                new_lines.extend(original_lines[cursor:s_idx])
+                new_lines.extend(new_code.splitlines(keepends=True))
+                cursor = e_idx
+            new_lines.extend(original_lines[cursor:])
+
+            # 写回修改后的文件
+            with open(filepath, "w", encoding="utf-8", newline="\n") as f:
+                f.writelines(new_lines)
+                f.flush()
+            # print(f"Injected into {filepath}")
+            # input("Enter to continue...")
+        return backups
+
+    def reset(self, backups):
+        for filepath, code_lines in backups.items():
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.writelines(code_lines)
+                f.flush()
+            # print(f"Reset {filepath}!")
+            # input("Enter to continue...")
     
     def _test_pair_group(self, result_manager:ResultManager, group, data, original_execution_result):
         id = self.get_worker_id()
@@ -202,9 +255,9 @@ class Tester:
 
         # 一次性注入整个 group
         module_dirs = [volumn[0] for volumn in volumes]
-        # backups = self._inject_to_src(result_manager, group, data, volume_root)
+        backups = self._inject_to_src(result_manager, group, data, volume_root)
         ret = self.execute_test(volumes)
-        # self.reset(backups)
+        self.reset(backups)
         if ret is None:
             print("无法执行测试，检查！")
             return
@@ -530,13 +583,28 @@ def test_compile(methods):
         test_rxjava(methods, min_target_codes, worker, ["./gradlew", "compileJava"], only_test_compile)
         test_zookeeper(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
         test_arthas(methods, min_target_codes, worker, ["mvn", "compile"], only_test_compile)
+        
+        
+def test_pass_unittest(methods):
+    lines = [200, 400, 800, 1000]
+    # line = int(sys.argv[1])
+    for line in lines:
+        min_target_codes = line
+        worker = 2
+        
+        only_test_compile = False
+        test_jedis(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
+        test_stirlingpdf(methods, min_target_codes, worker, ["./gradlew", "test"], only_test_compile)
+        test_newpipe(methods, min_target_codes, worker, ["./gradlew", "testDebugUnitTest"], only_test_compile)
+        test_rxjava(methods, min_target_codes, worker, ["./gradlew", "test"], only_test_compile)
+        test_zookeeper(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
+        test_arthas(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
 
 def reset_test(methods, project_name):
     author_id_map = AuthorIDMap()
     author_id_map.load()
     pair_dict = create_pair_dict(200, ["across-project"])
     lines = [200, 400, 800, 1000]
-    # line = int(sys.argv[1])
     for line in lines:
         for m in methods:
             result_manager = ResultManager(create_transformation_result_jsonl_path(m, line))
@@ -545,6 +613,8 @@ def reset_test(methods, project_name):
                 if author_id_map.get_author_project(p.src_author) == project_name:
                     r.compilable = ""
                     r.test_passed = ""
+            result_manager.update_all()
+                    
 
     
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
@@ -559,9 +629,10 @@ if __name__ == "__main__":
             "egsi",
             # "claude-3.7-sonnet"
         ]
-    lines = [200, 400, 800, 1000]
-    for line in lines:
-        output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
-    # test_compile(methods)
+    # lines = [200, 400, 800, 1000]
+    # for line in lines:
+    #     output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
+    test_compile(methods)
     
-    # reset_test(methods, "arthas")
+    # for p in ProjectConfigs().get_all_project_names():
+    #     reset_test(methods, p)
