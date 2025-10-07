@@ -283,7 +283,6 @@ class Tester:
                 # 缩小到单个 pair，直接标记失败
                 r = result_manager.get_result_by_id(group[0].pair_id)
                 r.compilable = False
-                r.test_passed = False
             else:
                 if len(group) > 4:
                     # 把 group 拆成两半，递归检测
@@ -530,8 +529,10 @@ def output_test_result(line_threshold, methods, output_file):
             compilable_count = sum(1 for r in all_results if r.compilable)
             test_passed_count = sum(1 for r in all_results if r.test_passed)
 
-            comp_rate = compilable_count / len([1 for r in all_results if r.compilable != ""])
-            test_rate = test_passed_count / len([1 for r in all_results if r.test_passed != ""])
+            comp_total = len([1.0 for r in all_results if r.compilable != ""])
+            comp_rate = compilable_count / comp_total if comp_total > 0 else 1.0
+            test_total = len([1 for r in all_results if r.test_passed != ""])
+            test_rate = test_passed_count / test_total if test_total > 0 else 1.0
 
         results_summary.append({
             "Method": m,
@@ -614,6 +615,18 @@ def reset_test(methods, project_name):
                     r.compilable = ""
                     r.test_passed = ""
             result_manager.update_all()
+            
+            
+def update_test_passed(methods):
+    with open("coverage_pairs.txt", "r") as f:
+        coveraged_pairs = set(line.strip() for line in f.readlines())
+    lines = [200, 400, 800, 1000]
+    for line in lines:
+        for m in methods:
+            result_manager = ResultManager(create_transformation_result_jsonl_path(m, line))
+            for r in result_manager.get_all_results():
+                if r.pair_id not in coveraged_pairs:
+                    r.test_passed = ""
                     
 
     
@@ -629,10 +642,11 @@ if __name__ == "__main__":
             "egsi",
             # "claude-3.7-sonnet"
         ]
-    # lines = [200, 400, 800, 1000]
-    # for line in lines:
-    #     output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
-    test_compile(methods)
+    lines = [200, 400, 800, 1000]
+    for line in lines:
+        output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
+    # test_compile(methods)
+    test_pass_unittest(methods)
     
     # for p in ProjectConfigs().get_all_project_names():
     #     reset_test(methods, p)

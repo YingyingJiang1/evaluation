@@ -1,34 +1,38 @@
 	public static byte[] readLine(InputStream in) throws IOException {
 		if (in == null)
-			throw new IllegalArgumentException("InputStream is null");
-		int c;
-		// skip leading LF characters
-		do {
-			in.mark(1);
-			c = in.read();
-		} while (c == LF);
-		if (c == -1)
-			return null;
-		int capacity = 256;
-		byte[] buffer = new byte[capacity];
+			throw new IllegalArgumentException("InputStream cannot be null");
+		byte[] buffer = new byte[256];
 		int count = 0;
-		while (c != -1 && c != CR && c != LF) {
-			if (count == capacity) {
-				capacity += 256;
-				buffer = Arrays.copyOf(buffer, capacity);
+		boolean firstByte = true;
+		while (true) {
+			int b = in.read();
+			if (b == -1) {
+				if (count == 0)
+					return null;
+				break;
 			}
-			buffer[count++] = (byte) c;
-			c = in.read();
+			// Skip leading LF characters
+			if (firstByte && b == LF)
+				continue;
+			firstByte = false;
+			if (b == CR || b == LF)
+				break;
+			if (count == buffer.length) {
+				byte[] newBuffer = new byte[buffer.length + 256];
+				System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+				buffer = newBuffer;
+			}
+			buffer[count++] = (byte) b;
 		}
-		// If CR and next is LF, skip it if possible
-		if (c == CR) {
+		// If line ended with CR and next is LF, skip the LF if possible
+		if (count > 0 && buffer[count - 1] == CR) {
 			in.mark(1);
 			int next = in.read();
 			if (next != LF && next != -1) {
 				in.reset();
 			}
 		}
-		if (count == 0 && c == -1)
+		if (count == 0)
 			return null;
 		return Arrays.copyOf(buffer, count);
 	}

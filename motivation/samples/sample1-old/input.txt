@@ -14,5 +14,5 @@ The signature and docstring of the target function:
 	 */
 	public static byte[] readLine(InputStream in) throws IOException
 
-The code context is as follows:
+The code and its surrounding context are as follows:
 

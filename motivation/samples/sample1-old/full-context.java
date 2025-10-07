@@ -344,6 +344,17 @@ class TypeUtil {
 	 * the end of the stream. The line terminator itself is not included
 	 * in the returned byte array.
 	 * 
+	 * <p>
+	 * Behavior specifics:
+	 * <ul>
+	 *   <li>Leading LF characters are skipped at the start of reading.</li>
+	 *   <li>If the buffer fills up, it is automatically expanded in chunks of 256 bytes.</li>
+	 *   <li>If the line ends with CR and the next byte is LF (and the stream supports mark/reset),
+	 *       the LF is skipped.</li>
+	 *   <li>If the end of the stream is reached before any bytes are read, the method returns null.</li>
+	 * </ul>
+	 * </p>
+	 * 
 	 * @param in the InputStream to read from
 	 * @return a byte array containing the line read (excluding CR/LF), or null if end-of-stream is reached before any data
 	 * @throws IOException if an I/O error occurs while reading from the stream
