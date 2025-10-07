@@ -1,0 +1,5 @@
+method,Agree-Success,Agree-Failure,Human-Only,Forsee-Only,Total
+deepseek-r1-0528--free,4,13,17,8,42
+codebuff,13,17,6,6,42
+egsi,14,14,9,5,42
+gpt-4.1,11,15,10,6,42

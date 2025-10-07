@@ -1,5 +1,5 @@
-﻿Method,Success Rate(%),Forsee-Success Rate(%),Forsee-Failure Rate(%)
-egsi,57.14,68.18,50.0
-codebuff,43.14,60.87,28.57
-deepseek-r1-0528--free,50.0,35.71,55.56
-gpt-4.1,58.49,69.57,50.0
+﻿Method,Success Rate(%),Forsee-Success Rate(%)
+egsi,54.76,45.24
+codebuff,45.24,45.24
+deepseek-r1-0528--free,50.0,28.57
+gpt-4.1,50.0,40.48

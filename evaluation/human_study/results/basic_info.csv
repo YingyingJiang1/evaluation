@@ -1,0 +1,21 @@
+﻿# ===== Programming Experience =====
+programming_experience,count,percentage
+中级（1-3年）,65,76.47
+初级（＜1年）,10,11.76
+高级（＞ 3年）,10,11.76
+
+# ===== Know Java =====
+konw_java,count,percentage
+是,63,74.12
+否,22,25.88
+
+# ===== Styles Cared About =====
+style,count,percentage
+格式（缩进，空格，换行等）,80,24.84
+控制流语句和表达式的习惯,49,15.22
+命名,71,22.05
+注释,51,15.84
+函数设计,58,18.01
+异常处理,10,3.11
+其他,2,0.62
+0,1,0.31
