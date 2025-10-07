@@ -1033,13 +1033,13 @@ if __name__ == "__main__":
     graphs_dir = os.path.join(results_dir, "graphs")
     # find_false_positives(data_path)
     
-    preprocess(questionnar_data_dir, raw_data_path)
-    process(raw_data_path, data_path)
+    # preprocess(questionnar_data_dir, raw_data_path)
+    # process(raw_data_path, data_path)
     
     # graphs_dir = os.path.join(results_dir, "graphs")
     basic_info_graph(raw_data_path, graphs_dir)
     basic_info_to_csv(os.path.join(results_dir, "merged_data.csv"), os.path.join(results_dir, "basic_info.csv"))
-    success_rate_data = cal_success_rate(data_path, os.path.join(results_dir, "success_rates.csv"))
+    success_rate_data = cal_success_rate(raw_data_path, os.path.join(results_dir, "success_rates.csv"))
     plot_score_radar(data_path, os.path.join(graphs_dir, "score_radar.pdf"))
     # plot_method_boxplot(data_path, graphs_dir)
     
