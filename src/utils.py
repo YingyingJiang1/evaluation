@@ -31,6 +31,7 @@ def create_tested_data_csv_path(project_name):
 def create_transformation_result_jsonl_path(method, min_target_code_lines):
     return os.path.join(DATA_DIR, DATASET_CREATION, str(min_target_code_lines), f"{method}-result.jsonl")
 
+
 def create_no_tests_data_csv_path(project_name):
     return os.path.join(DATA_DIR, project_name, f"data-no-tests.csv")
 

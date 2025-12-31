@@ -17,7 +17,6 @@ EVAL_DIR = os.path.join(ROOT, "evaluation")
 
 
 
-HUMAN_STUDY_DIR = "../evaluation/human_study"
 TMP_DATA = os.path.join(ROOT, "tmp-data")
 META_DATA_DIR = os.path.join(ROOT, "meta-data")
 FORSEE_EVAL_RESULT_DIR = os.path.join(TMP_DATA, "forsee", "classify")

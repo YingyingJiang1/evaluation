@@ -1,0 +1,4 @@
+timestamp,method,line_size,run_id,t_total_s,throughput,cpu_avg_time(s),cpu_peak_time(s),ram_avg,ram_peak,tokens_in,tokens_out,tokens_total
+2025-10-12T21:57:07,egsi,1000,1,43.66,2.08,0.0,0.0,0.0,0.0,0,0,0
+2025-10-12T21:58:02,egsi,1000,2,41.79,1.99,0.0,0.0,0.0,0.0,0,0,0
+2025-10-12T21:58:56,egsi,1000,3,45.86,2.18,0.0,0.0,0.0,0.0,0,0,0

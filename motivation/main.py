@@ -204,7 +204,7 @@ if __name__ == "__main__":
     # generate_prompt("samples/sample3/input.java")
     # task_ids = get_unique_task_ids("GPT4_code_samples.xlsx")
     # extract_docs_and_code("CoderEval4Java.json", output_dir="samples")
-    # extract_docs_and_code("CoderEval4Java.json", output_dir="selected-tasks")
+    extract_docs_and_code("CoderEval4Java.json", output_dir="selected-tasks")
     
     model = "deepseek/deepseek-r1-0528"
     model = "openai/gpt-3.5-turbo"
@@ -213,5 +213,5 @@ if __name__ == "__main__":
     # model = "x-ai/grok-4-fast"
     
     
-    run_llm(model, "samples/sample1")
+    # run_llm(model, "samples/sample1")
     

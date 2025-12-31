@@ -137,6 +137,7 @@ class EvalResults:
             if tranform_type == TranformType.FAILURE:
                 original_code = DataCache.get_code_list(project_name, src_author, [r.src_id])[0]
                 tranform_type = TranformType.get_failure_type(original_code, r.code)
+            r.tranform_type = tranform_type
 
             # 计算置信度变化
             confidence_dict = original_classify_dict[r.project_name].get_confidence_dict([src_author, target_author],src_author, r.src_id)
@@ -158,6 +159,7 @@ class EvalResults:
         # self.save_to_jsonl(eval_results_path)
         # self.save_to_csv(eval_results_path)
         
+        transform_results.update_all()
             
             
     def load_from(self, path: str):
@@ -455,8 +457,104 @@ def eval_transformers(across_project_flag=False):
     output_success_rate_table(eval_results_list, create_eval_transform_success_rate_path(min_target_lines))
 
 
+
+def confidence_analysis(method, min_target_lines):
+        eval_results_path = create_eval_results_path(method, min_target_lines)
+        # if os.path.exists(eval_results_path):
+        #     self.load_from(eval_results_path)
+        #     return
+        
+        project_names = ["across-project"]
+
+        pair_dict = create_pair_dict(min_target_lines, project_names)
+        
+        result_path = create_transformation_result_jsonl_path(method, min_target_lines)
+        transform_results = ResultManager(result_path)
+
+        # 获取转换后的代码的forsee分类结果
+        transformed_classify_results = classify_transformed_results(method, min_target_lines)
+        
+        original_classify_dict = {}
+        
+        prositives_count = 0
+        total = 0
+        for r in transform_results.get_all_results():
+            if r.tranform_type == "Failure":
+                project_name = r.project_name
+                pair = pair_dict[(r.project_name, r.pair_id)]
+                src_author, target_author = pair.src_author, pair.target_author
+
+                transform_classify = transformed_classify_results.get_result(target_author, r.src_id, r.project_name, src_author)
+                relative_distance_dec = []
+
+                if transform_classify is None:
+                    print(f"No classification result was found of transformation result.")
+                    continue
+                
+                # 添加原始数据的分类结果
+                if r.project_name not in original_classify_dict:
+                    original_classify_result = ClassifierResults(r.project_name)
+                    if not original_classify_result.load_results():
+                        print("No classify results of dataset have been found!")
+                    original_classify_dict[r.project_name] = original_classify_result
+                
+
+                # 计算置信度变化
+                confidence_dict1 = original_classify_dict[r.project_name].get_confidence_dict([src_author, target_author],src_author, r.src_id)
+                confidence_dict2 = get_confidence_in_authors(transform_classify, [src_author, target_author]) # transformed code
+                if method == "codebuff" and 1 in confidence_dict2.values() and -1 in confidence_dict2.values():
+                    continue
+                distance = abs(confidence_dict1[src_author]-confidence_dict1[target_author])
+                after_distance = abs(confidence_dict2[src_author]-confidence_dict2[target_author])
+                if confidence_dict2[target_author] > confidence_dict1[target_author] and confidence_dict2[src_author] <= confidence_dict1[src_author]:
+                    prositives_count += 1
+                    
+                relative_distance_dec.append((after_distance - distance) / distance)
+                total += 1
+        
+        positive_percent = round(prositives_count / total * 100, 2)
+        relativa_distance = round(np.mean(relative_distance_dec) * 100, 2)
+        similarity_gain = -relativa_distance
+        median_gain = -np.median(relative_distance_dec)
+        print(f"{method}: {positive_percent}, {similarity_gain}, {median_gain}")
+              
+
+def create_tasks(methods):
+    lines = [200, 400, 800, 1000]
+    sets = set()
+    pair_dict = create_pair_dict(200, ["across-project"])
+    for line in lines:
+        dir = f"tasks/{line}"
+        path = create_transformation_result_jsonl_path("egsi", line)
+        result_manager = ResultManager(path)
+        pair_ids = [r.pair_id for r in result_manager.get_all_results() if r.tranform_type == "Failure" or r.tranform_type == "Success"]
+        pairs = [p for p in pair_dict.values() if p.pair_id in pair_ids]
+        print(len(pairs))
+        for p in pairs:
+            src_dir = os.path.join(dir, str(p.pair_id))
+            os.makedirs(src_dir, exist_ok=True)
+            with open(os.path.join(src_dir, "src.java"), 'w') as f:
+                f.write(DataCache.get_code_list(p.project_name, p.src_author, [p.src_id])[0])
+            target_dir = os.path.join(dir, str(p.pair_id), "reference")
+            os.makedirs(target_dir, exist_ok=True)
+            for id in p.target_ids:
+                with open(os.path.join(target_dir, f"{id}.java"), 'w') as f:
+                    f.write(DataCache.get_code_list(p.project_name, p.target_author, [id])[0])
+
+
 if __name__ == "__main__":
-    eval_transformers(across_project_flag=True)
+    # eval_transformers(across_project_flag=True)
+    methods = [
+        "egsi",
+        "codebuff",
+        "deepseek-r1-0528--free",
+        "gpt-4.1",
+    ]
+    
+    # for method in methods:
+    #     confidence_analysis(method, 200)
+    
+    create_tasks(methods)
 
     # eval_target_quality(200)
     # eval_src_quality("egsi", 200)

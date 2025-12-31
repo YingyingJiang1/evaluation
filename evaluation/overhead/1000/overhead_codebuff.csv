@@ -1,0 +1,4 @@
+timestamp,method,line_size,run_id,t_total_s,throughput,cpu_avg_time(s),cpu_peak_time(s),ram_avg,ram_peak,tokens_in,tokens_out,tokens_total
+2025-10-12T17:44:39,codebuff,1000,1,122.51,5.83,0.0,0.0,0.0,0.0,0,0,0
+2025-10-12T17:47:47,codebuff,1000,2,138.63,6.6,0.0,0.0,0.0,0.0,0,0,0
+2025-10-12T17:51:06,codebuff,1000,3,134.3,6.4,0.0,0.0,0.0,0.0,0,0,0

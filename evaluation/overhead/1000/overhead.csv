@@ -1,0 +1,5 @@
+filename,t_total_s,throughput,cpu_avg_time(s),cpu_peak_time(s),ram_avg,ram_peak,avg_tokens_in,avg_tokens_out,avg_tokens_total,tokens_in,tokens_out,tokens_total
+deepseek-r1-0528.csv,631.2033333333334,30.05666666666667,0.0,0.0,0.0,0.0,9120.156666666668,4527.5233333333335,13647.68,,,
+gpt-4.1.csv,116.93333333333332,5.566666666666666,0.0,0.0,0.0,0.0,8667.0,436.17333333333335,9103.173333333332,,,
+overhead_codebuff.csv,131.81333333333333,6.276666666666666,0.0,0.0,0.0,0.0,,,,0.0,0.0,0.0
+overhead_egsi.csv,43.77,2.0833333333333335,0.0,0.0,0.0,0.0,,,,0.0,0.0,0.0

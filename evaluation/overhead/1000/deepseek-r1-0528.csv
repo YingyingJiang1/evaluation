@@ -1,0 +1,4 @@
+timestamp,method,line_size,run_id,t_total_s,throughput,cpu_avg_time(s),cpu_peak_time(s),ram_avg,ram_peak,avg_tokens_in,avg_tokens_out,avg_tokens_total
+2025-10-14T19:18:45,deepseek/deepseek-r1-0528,1000,1,713.2,33.96,0,0,0,0,8502.95,5155.95,13658.9
+2025-10-14T19:30:38,deepseek/deepseek-r1-0528,1000,2,623.14,29.67,0,0,0,0,9503.95,4488.0,13991.95
+2025-10-14T19:41:01,deepseek/deepseek-r1-0528,1000,3,557.27,26.54,0,0,0,0,9353.57,3938.62,13292.19

@@ -1,0 +1,4 @@
+timestamp,method,line_size,run_id,t_total_s,throughput,cpu_avg_time(s),cpu_peak_time(s),ram_avg,ram_peak,avg_tokens_in,avg_tokens_out,avg_tokens_total
+2025-10-14T11:09:44,openai/gpt-4.1,800,1,154.06,7.34,0,0,0,0,7410.05,652.29,8062.33
+2025-10-14T11:12:18,openai/gpt-4.1,800,2,112.06,5.34,0,0,0,0,6870.33,303.52,7173.86
+2025-10-14T11:14:11,openai/gpt-4.1,800,3,108.55,5.17,0,0,0,0,6938.57,353.48,7292.05

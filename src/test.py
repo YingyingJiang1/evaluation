@@ -6,7 +6,7 @@ from config import ProjectConfigs, ProjectConfig
 from transform import ResultManager
 from dataset import Data, MethodWrapper, TransformPair
 from utils import *
-from eval import create_pair_dict
+from eval import create_pair_dict, TranformType
 from author_tagger import AuthorIDMap
 from path import TEST_DIR
 
@@ -163,10 +163,10 @@ class Tester:
             if untested_groups:  
                 print(f"Test {method}: {len(self.get_pairs())} pairs")
                 for id, group in enumerate(untested_groups, start=1): 
-                    # self._test_pair_group(result_manager, group, data, original_execution_result)
-                    future = executor.submit(self._test_pair_group, result_manager, group, data, original_execution_result)
+                    self._test_pair_group(result_manager, group, data, original_execution_result)
+                    # future = executor.submit(self._test_pair_group, result_manager, group, data, original_execution_result)
                     # future.add_done_callback(_callback)
-                    futures.append(future)
+                    # futures.append(future)
             # 阻塞直到所有任务完成
             for future in as_completed(futures):
                 future.result()
@@ -182,8 +182,8 @@ class Tester:
                 cmd = self.args
                 print(f"run: {' '.join(cmd)}")
                 ret = subprocess.run(cmd, cwd=path, capture_output=True, text=True, shell=True)
-                if ret is None or ret.returncode != 0:
-                    print(ret)
+                # if ret is None or ret.returncode != 0:
+                #     print(ret)
                 return ret
         except Exception as e:
             print(f"运行测试出错: {e}")
@@ -231,7 +231,7 @@ class Tester:
             with open(filepath, "w", encoding="utf-8", newline="\n") as f:
                 f.writelines(new_lines)
                 f.flush()
-            # print(f"Injected into {filepath}")
+            print(f"Injected into {filepath}")
             # input("Enter to continue...")
         return backups
 
@@ -263,8 +263,8 @@ class Tester:
             return
         is_compilable = ret and ret.returncode == 0
         
-        if ret.returncode != 0:
-            print(f"{ret}")
+        # if ret.returncode != 0:
+        # print(f"{ret}")
 
         
         if is_compilable:
@@ -274,6 +274,7 @@ class Tester:
                 r.compilable = True
             if not self.only_test_compile:
                 new_execution_result = self.get_execution_result(ret, module_dirs)
+                print(f"new execution result: {new_execution_result}")
                 test_passed = self.is_test_passed(original_execution_result, new_execution_result)
                 for pair in group:
                     r = result_manager.get_result_by_id(pair.pair_id)
@@ -519,6 +520,7 @@ def output_test_result(line_threshold, methods, output_file):
     for m in methods:
         result_manager = ResultManager(create_transformation_result_jsonl_path(m, line_threshold))
         all_results = result_manager.get_all_results()
+        all_results = [r for r in all_results if not (r.tranform_type == TranformType.ALIGNED or r.tranform_type == TranformType.REVERSAl)]
 
         total = len(all_results)
         if total == 0:
@@ -591,7 +593,7 @@ def test_pass_unittest(methods):
     # line = int(sys.argv[1])
     for line in lines:
         min_target_codes = line
-        worker = 2
+        worker = 1
         
         only_test_compile = False
         test_jedis(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
@@ -599,7 +601,7 @@ def test_pass_unittest(methods):
         test_newpipe(methods, min_target_codes, worker, ["./gradlew", "testDebugUnitTest"], only_test_compile)
         test_rxjava(methods, min_target_codes, worker, ["./gradlew", "test"], only_test_compile)
         test_zookeeper(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
-        test_arthas(methods, min_target_codes, worker, ["mvn", "test"], only_test_compile)
+        test_arthas(methods, min_target_codes, worker, ["mvn", "install"], only_test_compile)
 
 def reset_test(methods, project_name):
     author_id_map = AuthorIDMap()
@@ -625,9 +627,10 @@ def update_test_passed(methods):
         for m in methods:
             result_manager = ResultManager(create_transformation_result_jsonl_path(m, line))
             for r in result_manager.get_all_results():
-                if r.pair_id not in coveraged_pairs:
+                if r.code == "":
                     r.test_passed = ""
-                    
+                    r.compilable = ""
+            result_manager.update_all()
 
     
 # 运行测试之前确保项目已经在本地完成测试，可以通过../docker/run.bat脚本来运行项目测试
@@ -646,7 +649,8 @@ if __name__ == "__main__":
     for line in lines:
         output_test_result(line, methods, os.path.join(EVAL_DIR, "test_result.csv"))
     # test_compile(methods)
-    test_pass_unittest(methods)
+    # test_pass_unittest(methods)
     
     # for p in ProjectConfigs().get_all_project_names():
     #     reset_test(methods, p)
+    # update_test_passed(methods)

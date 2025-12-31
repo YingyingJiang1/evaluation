@@ -1,3 +1,7 @@
+import psutil
+import threading
+import time
+import statistics
 import subprocess
 import csv
 import re
@@ -85,7 +89,8 @@ class TransformReuslt:
     code:str
     compilable:str=""
     test_passed:str=""
-    successful_trans:str=""
+    tranform_type:str=""
+
 
     @classmethod
     def from_dict(cls, data: dict) -> "TransformReuslt":
@@ -96,7 +101,7 @@ class TransformReuslt:
             code=data["code"],
             compilable=data["compilable"] if "compilable" in data else "",
             test_passed=data["test_passed"] if "test_passed" in data else "",
-            successful_trans=data["successful_trans"] if "successful_trans" in data else ""
+            tranform_type=data["tranform_type"] if "tranform_type" in data else ""
         )
 
 
@@ -300,7 +305,7 @@ class ResultManager:
     def flush_all(self):
          with self.lock:
             if self.buffer:
-                self._flush_to_file_locked()
+                self._flush_to_file()
             
     def update_all(self):
        with self.lock:
@@ -314,7 +319,7 @@ class ResultManager:
             self.buffer.append(result)
             self.result_dict[(result.project_name, result.pair_id)] = result
             if len(self.buffer) >= self.flush_threshold:
-                self._flush_to_file_locked()
+                self._flush_to_file()
 
                 
     def get_all_results(self):
@@ -365,6 +370,7 @@ def get_code_from_response(text, language):
 
 
 def run_llm(model_name, data:list[TransformPairPack], result_manager:ResultManager,  override=False):
+    input_tokens, output_tokens = 0, 0
     # gets API Key from environment variable OPENAI_API_KEY
     client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -389,12 +395,24 @@ def run_llm(model_name, data:list[TransformPairPack], result_manager:ResultManag
                 {"role": "system", "content": system_prompt}
             ]
         )
+        usage = completion.usage
+        prompt_toks = usage.prompt_tokens
+        completion_toks = usage.completion_tokens
+        total_toks = usage.total_tokens
+
+        input_tokens += prompt_toks
+        output_tokens += completion_toks
+        total_tokens += total_toks
+        
+        
         response = completion.choices[0].message.content
 
         results = create_transform_result(d, response)
         result_manager.add_results(results)
         
     result_manager.flush_all()
+    
+    return [input_tokens, output_tokens, total_tokens]
 
        
 
@@ -473,7 +491,6 @@ def create_result_from_dir(pair:TransformPairPack):
         else:
             results.append(TransformReuslt(pair.project_name, id,src_id, ""))
     return results
-
 
 def run_egsi(data:list[TransformPairPack], result_buffer:ResultManager):
     for d in data:
@@ -680,6 +697,7 @@ def check_result_order(min_target_lines):
                     r.code = result_codes[signature].code
             
         res_manager.update_all()
+        
 
                     
 if __name__ == "__main__":

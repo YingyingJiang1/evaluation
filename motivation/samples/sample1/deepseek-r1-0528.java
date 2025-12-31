@@ -9,7 +9,7 @@
 		}
 
 		byte[] buf = new byte[256];
-		int len = 0;
+		int len = 0; 
 
 		while (b != CR && b != LF && b >= 0) {
 			if (len >= buf.length) {

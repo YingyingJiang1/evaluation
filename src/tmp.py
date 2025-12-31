@@ -5,8 +5,9 @@ from config import ProjectConfigs
 import re
 
 import json
+import csv
 
-from eval import DataCache, create_pair_dict
+from eval import DataCache, create_pair_dict, TranformType
 
 
 def update_pair_id(old_data:list[TransformPair], new_data:list[TransformPair]):
@@ -205,9 +206,8 @@ def update_test_results(min_target_lines, method="egsi"):
     for r in manager.get_all_results():
         tested_r = tested_manager.get_result(r.project_name, r.pair_id)
         # 结果相同，同步测试结果
-        if tested_r and r.code == tested_r.code:
-            r.compilable = tested_r.compilable
-            r.test_passed = tested_r.test_passed
+        if r.test_passed == "":
+            r.test_passed = r.compilable
             
     manager.update_all()
     
@@ -220,22 +220,125 @@ def count_different_src_files():
     for p in pair_dict.values():
         file_set.add(p.src_author + p.src_id)
     print(len(file_set))
+    
+    
+def write_tess_failed(method, lines=200):
+    """
+    将编译失败的转换结果写入临时目录
+
+    该函数会将所有编译失败的转换结果及其对应的源代码分别保存到临时目录中，
+    文件名为方法名.java和src.java。
+
+    Args:
+        method: 转换方法名称
+        lines: 代码行数限制，默认为200
+
+    Returns:
+        None
+    """
+    result_manager = ResultManager(create_transformation_result_jsonl_path(method, lines))
+    pair_dict = create_pair_dict(200, ["across-project"])
+    for r in result_manager.get_all_results():
+        if r.compilable != "" and not r.compilable:
+            dir = os.path.join(TMP_DATA, "failed", r.pair_id)
+            os.makedirs(dir, exist_ok=True)
+            with open(os.path.join(dir, method+".java"), "w", encoding="utf-8") as f:
+                f.write(r.code)
+            
+            with open(os.path.join(dir, "src.java"), "w", encoding="utf-8") as f:
+                src_code = DataCache.get_code_list(r.project_name, pair_dict[(r.project_name, r.pair_id)].src_author, [r.src_id])[0]
+                f.write(src_code)
+
+
+def filter_csv_by_authors(jsonl_path, csv_path, output_path):
+    # 1. 读取 JSONL 文件，收集所有作者 ID
+    author_set = set()
+    with open(jsonl_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.strip():
+                data = json.loads(line)
+                # 提取 src_author 和 target_author
+                src = data.get("src_author")
+                tgt = data.get("target_author")
+                if src:
+                    author_set.add(src)
+                if tgt:
+                    author_set.add(tgt)
+
+    print(f"Collected {len(author_set)} unique authors from {jsonl_path}")
+
+    # 2. 读取 CSV 并过滤
+    with open(csv_path, 'r', encoding='utf-8') as fin, \
+         open(output_path, 'w', encoding='utf-8', newline='') as fout:
+        reader = csv.DictReader(fin, delimiter=',')
+        writer = csv.DictWriter(fout, fieldnames=reader.fieldnames, delimiter=',')
+        writer.writeheader()
+
+        kept = 0
+        for row in reader:
+            
+            if row['author'] in author_set:
+                writer.writerow(row)
+                kept += 1
+
+    print(f"Filtered CSV written to {output_path}, kept {kept} rows.")
+
+def get_meta(method, lines=200):
+    result_manager = ResultManager(create_transformation_result_jsonl_path(method, lines))
+    pair_dict = create_pair_dict(200, ["across-project"])
+    exclued = []
+    for r in result_manager.get_all_results():
+        if r.tranform_type == TranformType.ALIGNED or r.tranform_type == TranformType.REVERSAl:
+            exclued.append(r.pair_id)
+            
+    authors = set()
+    authors_pairs = set()
+    locs = []
+    total = 0
+    for p in pair_dict.values():
+        if p.pair_id in exclued:
+            continue
+        total += 1
+        authors.add(p.src_author)
+        authors_pairs.add(p.src_author+p.target_author)
+        loc = len(DataCache.get_code_list(p.project_name, p.src_author, [p.src_id])[0].split("\n"))
+        locs.append(loc)
+    print(authors)
+    print(f"pairs, authors/author_pairs, min_loc, max_loc, avg_loc")
+    print(f"{total}, {len(authors)}/{len(authors_pairs)}, {min(locs)}, {max(locs)}, {sum(locs)/len(locs)}")
+    
+    
+def update_test_results(min_target_lines, method="codebuff"):
+    file = create_transformation_result_jsonl_path(method, min_target_lines)
+    manager = ResultManager(file)
+    
+    pair =  create_pair_dict(min_target_lines, ["across-project"])
+    s = set()
+    for p in pair.values():
+        if (p.src_author, p.target_author) not in s and (p.target_author, p.src_author) not in s:
+            s.add((p.src_author, p.target_author))
+            
+    print(s)
+
+            
 
 if __name__ == "__main__":
     
-    # methods = [
-    #         "egsi",
-    #         "codebuff",
-    #         "deepseek-r1-0528--free",
-    #         "gpt-4.1",
-    #         # "claude-3.7-sonnet"
-    #     ]
-    # update_test_results(200)
-    
+    methods = [
+            "egsi",
+            "codebuff",
+            "deepseek-r1-0528--free",
+            "gpt-4.1",
+            # "claude-3.7-sonnet"
+        ]
+    lines = [200, 400, 800, 1000]
+   
+    update_test_results(200)
     # for m in methods:
     #     print_failed_tests(200, m)
     # result = ResultManager(create_transformation_result_jsonl_path("egsi", 200))
     # print(result.get_result("across-project", "328").code)
-    
-    count_different_src_files()
+    # get_meta("egsi", 200)
+    # write_tess_failed("codebuff", 800)
+    # filter_csv_by_authors(r"C:\Users\dell\jyy\research\evaluation\data\across-project\200\across-project-pairs.jsonl", r"C:\Users\dell\jyy\research\evaluation\meta-data\csv\code-size-distribution.csv", "selected-author.csv")
 

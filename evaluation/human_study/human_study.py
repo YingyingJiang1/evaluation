@@ -27,7 +27,14 @@ label_map = {
         "gpt-4.1":"GPT-4.1"
 
     }
-axis_font_size = 10
+method_colors = {
+    'egsi': (228/255, 26/255, 28/255),       # smartstylerColor - 红色
+    'codebuff': (30/255, 144/255, 255/255),         # codebuffColor - 蓝色
+    'deepseek-r1-0528--free': (77/255, 175/255, 74/255),  # deepseekColor - 绿色
+    'gpt-4.1': (255/255, 127/255, 0/255),           # gptColor - 橙色
+    'original_src': (120/255, 120/255, 120/255)     # baseline 灰色
+}
+axis_font_size = 20
 font_size = 10
 
 @dataclass
@@ -92,6 +99,9 @@ def save_as_csv(results, output_file):
             })
     
 def preprocess(input_dir, output_file):
+    """_summary_
+    处理所有答卷数据，每个task的每个回答保存为一条数据
+    """
     # 加载 name_map
     with open(name_map_file, "r", encoding="utf-8") as f:
         name_map = json.load(f)
@@ -195,7 +205,7 @@ def preprocess(input_dir, output_file):
                 if test_question_results != ["C", "C"]:
                     continue
                 
-                # 对每个 task 生成一个 Item
+                # 对每个 task的每个回答生成一个 Item
                 for task_id, data in task_data.items():
                     results.append(
                         Item(
@@ -230,12 +240,24 @@ def preprocess(input_dir, output_file):
         f.write("\n".join(teles))
 
 
-def process(input_csv: str, output_csv: str):
+def process(input_csv: str, output_csv: str, valid_data_cond=None):
+    """_summary_
+    对每个task的所有回答进行聚合，计算每个task在不同风格维度上的平均得分以及成功与否
+
+    Args:
+        input_csv (str): _description_
+        output_csv (str): _description_
+        valid_data_cond (_type_, optional): 用于判断每条数据是否被保留用于分析
+
+    """
     # 读取 CSV 并解析 JSON 字段
     items_by_task = defaultdict(list)
     with open(input_csv, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
+            if valid_data_cond and not valid_data_cond(row):
+                continue
+            
             task_id = row["task_id"]
             success_map = json.loads(row.get("success_map", "{}"))
             format_score_map = json.loads(row.get("format_score_map", "{}"))
@@ -266,7 +288,7 @@ def process(input_csv: str, output_csv: str):
         for k in all_keys:
             values = [item["success_map"].get(k) for item in group if k in item["success_map"]]
             count = Counter(values).most_common(1)[0][1]
-            if len(group) > 1 and count > len(group) / 2.0:
+            if count > len(group) / 2.0:
                 combined_success[k] = Counter(values).most_common(1)[0][0]
 
         # score_map：同一个 key 取中位数
@@ -309,7 +331,62 @@ def process(input_csv: str, output_csv: str):
                 "semantic_score_map": json.dumps(item["semantic_score_map"], ensure_ascii=False),
                 "forsee_result":json.dumps(item["forsee_result"], ensure_ascii=False)
             })
-            
+
+
+def group_data_by_experience(preprocessed_csv):
+    results_dir = os.path.join(HUMAN_STUDY_DIR, "results")
+    
+    primary_path = os.path.join(results_dir, "data_-1.csv")
+    inter_path = os.path.join(results_dir, "data_1-3.csv")
+    advanced_path = os.path.join(results_dir, "data_3+.csv")
+    
+    process(preprocessed_csv, primary_path, lambda row: row['programming_experience'] == '初级（＜1年）')
+    process(preprocessed_csv, inter_path, lambda row: row['programming_experience'] == '中级（1-3年）')
+    process(preprocessed_csv, advanced_path, lambda row: row['programming_experience'] == '高级（＞ 3年）')
+    
+    primary_success_rates = cal_success_rate(primary_path, None)
+    inter_success_rates = cal_success_rate(inter_path, None)
+    advanced_success_rates = cal_success_rate(advanced_path, None)
+    
+    plot_success_rate_bar(primary_success_rates, os.path.join(results_dir, "graphs", "success_rate_primary.png"))
+    plot_success_rate_bar(inter_success_rates, os.path.join(results_dir, "graphs", "success_rate_intermediate.png"))
+    plot_success_rate_bar(advanced_success_rates, os.path.join(results_dir, "graphs", "success_rate_advanced.png"))
+    
+    plot_score_radar(primary_path, os.path.join(results_dir, "graphs", "score_radar_primary.png"))
+    plot_score_radar(inter_path, os.path.join(results_dir, "graphs", "score_radar_intermediate.png"))
+    plot_score_radar(advanced_path, os.path.join(results_dir, "graphs", "score_radar_advanced.png"))
+
+
+
+def group_data_by_java_known(preprocessed_csv):
+    """
+    Group data by whether participants know Java.
+    know_java: 是 / 否
+    """
+    results_dir = os.path.join(HUMAN_STUDY_DIR, "results")
+    
+    java_yes_path = os.path.join(results_dir, "data_java_yes.csv")
+    java_no_path = os.path.join(results_dir, "data_java_no.csv")
+    
+    process(preprocessed_csv, java_yes_path, lambda row: row['konw_java'] == '是')
+    process(preprocessed_csv, java_no_path, lambda row: row['konw_java'] == '否')
+    
+    java_yes_success_rates = cal_success_rate(java_yes_path, None)
+    java_no_success_rates = cal_success_rate(java_no_path, None)
+    
+    plot_success_rate_bar(
+        java_yes_success_rates,
+        os.path.join(results_dir, "graphs", "success_rate_java_yes.png")
+    )
+    plot_success_rate_bar(
+        java_no_success_rates,
+        os.path.join(results_dir, "graphs", "success_rate_java_no.png")
+    )
+    
+    plot_score_radar(java_yes_path, os.path.join(results_dir, "graphs", "score_radar_java_yes.png"))
+    plot_score_radar(java_no_path, os.path.join(results_dir, "graphs", "score_radar_java_no.png"))
+
+
 import csv
 import json
 import os
@@ -506,11 +583,202 @@ def cal_success_rate(input_csv: str, output_csv: str):
             "Forsee-Success Rate(%)": round(forsee_true_s / forsee_true_t * 100, 2) if forsee_true_t > 0 else None,
         })
 
-    result_df = pd.DataFrame(records)
-    result_df.to_csv(output_csv, index=False, encoding="utf-8-sig")
+    if output_csv:
+        print(records)
+        result_df = pd.DataFrame(records)
+        result_df.to_csv(output_csv, index=False, encoding="utf-8-sig")
     return records
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from matplotlib import rcParams
+
+# 设置字体为 Times New Roman
+rcParams['font.family'] = 'Times New Roman'
+rcParams['font.size'] = 10                # IEEE 图表通常使用 8~10 pt
+rcParams['axes.labelsize'] = 10
+rcParams['axes.titlesize'] = 10
+rcParams['xtick.labelsize'] = 8
+rcParams['ytick.labelsize'] = 8
+rcParams['legend.fontsize'] = 8
+rcParams['axes.unicode_minus'] = False    # 允许负号正常显示
+
+def plot_violins(input_csv, save_path="violin.pdf"):
+    df = pd.read_csv(input_csv)
+    
+
+    # 定义维度
+    categories = ["format_score_map", "syntax_score_map", "semantic_score_map"]
+    dim_names = ["格式", "语法", "语义"]
+
+
+    # 收集每个方法在每个维度上的分数列表
+    all_data = {dim: {} for dim in dim_names}
+
+    for _, row in df.iterrows():
+        for cat, dim in zip(categories, dim_names):
+            scores = json.loads(row[cat])
+            for method, score in scores.items():
+                if method not in all_data[dim]:
+                    all_data[dim][method] = []
+                all_data[dim][method].append(score)
+    data = all_data
+
+    metrics = list(data.keys())
+    methods = list(next(iter(data.values())).keys())  # 从第一个维度取方法名
+    methods = ['original_src', 'egsi', 'codebuff', 'deepseek-r1-0528--free', 'gpt-4.1']
+    labels = ['Original','STYLEX', 'CodeBuff',  'DeepSeek', 'GPT']
+    # print(methods)
+    n_metrics = len(metrics)
+    n_methods = len(methods)
+
+    fig, axes = plt.subplots(1, n_metrics, figsize=(6, 2.5), sharey=True)
+    axis_font_size = 10
+
+    for i, metric in enumerate(metrics):
+        ax = axes[i]
+        all_vals = [data[metric].get(m, []) for m in methods]
+        all_vals = [v if len(v) > 0 else [np.nan] for v in all_vals]
+
+        parts = ax.violinplot(
+            all_vals,
+            showmedians=False,
+        )
+
+        # 🎨 根据方法名称指定颜色
+        for j, b in enumerate(parts['bodies']):
+            method_name = methods[j]
+            color = method_colors.get(method_name, (0.6, 0.6, 0.6))  # 若未定义则用灰色
+            b.set_facecolor(color)
+            b.set_edgecolor('black')
+            b.set_alpha(0.8)
+
+        # 📊 绘制统计信息 (min, Q1, median, Q3, max)
+        for j, vals in enumerate(all_vals):
+            vals = np.array([v for v in vals if not np.isnan(v)])
+            if len(vals) == 0:
+                continue
+            q1, med, q3 = np.percentile(vals, [25, 50, 75])
+            minv, maxv = np.min(vals), np.max(vals)
+            pos = j + 1
+
+            ax.plot([pos, pos], [q1, q3], color='black', linewidth=4)
+            ax.plot([pos - 0.15, pos + 0.15], [med, med], color='black', linewidth=2)
+            ax.plot([pos, pos], [minv, maxv], color='black', linewidth=1)
+            ax.plot([pos - 0.1, pos + 0.1], [minv, minv], color='black', linewidth=1)
+            ax.plot([pos - 0.1, pos + 0.1], [maxv, maxv], color='black', linewidth=1)
+
+        ax.set_xticks(np.arange(1, n_methods + 1))
+        # ax.set_xticklabels(labels, fontsize=axis_font_size+2)
+        ax.set_title(metric, fontsize=axis_font_size+2)
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+        ax.tick_params(labelsize=axis_font_size, axis='x', top=False, bottom=False)
+
+    axes[0].set_ylabel("Score", fontsize=axis_font_size)
+
+    # axes[0].tick_params(labelsize=axis_font_size, axis='x', top=True, bottom=False)
+    # ax.tick_params()
+    for ax in axes:
+        ax.set_xticklabels([])  # 隐藏上方子图的 x 标签
+
+    # axes[0].set_xticklabels(labels, rotation=45)  # 底部子图旋转
+
+    # plt.suptitle("Distribution of similarity core", fontsize=13)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(save_path, dpi=300)
+    plt.show()
+    print(f"✅ 图已保存为 {save_path}")
+
+# def plot_violins(input_csv, save_dir="results"):
+#     df = pd.read_csv(input_csv)
+
+#     # 定义维度
+#     categories = ["format_score_map", "syntax_score_map", "semantic_score_map"]
+#     dim_names = ["Format", "Syntax", "Semantic"]
+
+#     os.makedirs(save_dir, exist_ok=True)
+
+#     # 收集每个方法在每个维度上的分数列表
+#     all_data = {dim: {} for dim in dim_names}
+
+#     for _, row in df.iterrows():
+#         for cat, dim in zip(categories, dim_names):
+#             scores = json.loads(row[cat])
+#             for method, score in scores.items():
+#                 if method not in all_data[dim]:
+#                     all_data[dim][method] = []
+#                 all_data[dim][method].append(score)
+
+#     data = all_data
+#     metrics = list(data.keys())
+
+#     # 如果你希望固定方法顺序：
+#     methods = ['egsi', 'codebuff', 'original_src', 'deepseek-r1-0528--free', 'gpt-4.1']
+#     labels = ['SmartStyler', 'CodeBuff', 'Original', 'DeepSeek-R1', 'GPT-4.1']
+
+#     # 🎨 方法颜色映射（示例，可按需定义）
+#     method_colors = {
+#         'egsi': '#1f77b4',
+#         'codebuff': '#ff7f0e',
+#         'original_src': '#2ca02c',
+#         'deepseek-r1-0528--free': '#d62728',
+#         'gpt-4.1': '#9467bd'
+#     }
+
+#     axis_font_size = 18
+
+#     # === 为每个维度单独画图 ===
+#     for metric in metrics:
+#         fig, ax = plt.subplots(figsize=(10, 5))
+
+#         all_vals = [data[metric].get(m, []) for m in methods]
+#         all_vals = [v if len(v) > 0 else [np.nan] for v in all_vals]
+
+#         parts = ax.violinplot(all_vals, showmedians=False)
+
+#         # 🎨 上色
+#         for j, b in enumerate(parts['bodies']):
+#             method_name = methods[j]
+#             color = method_colors.get(method_name, (0.6, 0.6, 0.6))
+#             b.set_facecolor(color)
+#             b.set_edgecolor('black')
+#             b.set_alpha(0.8)
+
+#         # 📊 绘制统计信息
+#         for j, vals in enumerate(all_vals):
+#             vals = np.array([v for v in vals if not np.isnan(v)])
+#             if len(vals) == 0:
+#                 continue
+#             q1, med, q3 = np.percentile(vals, [25, 50, 75])
+#             minv, maxv = np.min(vals), np.max(vals)
+#             pos = j + 1
+#             ax.plot([pos, pos], [q1, q3], color='black', linewidth=4)
+#             ax.plot([pos - 0.15, pos + 0.15], [med, med], color='black', linewidth=2)
+#             ax.plot([pos, pos], [minv, maxv], color='black', linewidth=1)
+#             ax.plot([pos - 0.1, pos + 0.1], [minv, minv], color='black', linewidth=1)
+#             ax.plot([pos - 0.1, pos + 0.1], [maxv, maxv], color='black', linewidth=1)
+
+#         ax.set_xticks(np.arange(1, len(methods) + 1))
+#         ax.set_xticklabels(labels, fontsize=axis_font_size)
+#         ax.set_title(metric, fontsize=axis_font_size)
+#         ax.grid(axis='y', linestyle='--', alpha=0.6)
+#         ax.set_ylabel("Score", fontsize=axis_font_size)
+#         ax.tick_params(labelsize=axis_font_size)
+
+#         plt.tight_layout()
+
+#         # 保存单独图像
+#         save_path = os.path.join(save_dir, f"violin_{metric}.pdf")
+#         plt.show()
+#         plt.savefig(save_path, dpi=150)
+#         plt.close()
+#         print(f"✅ {metric} 图已保存为 {save_path}")
+        
 def plot_score_radar(input_csv: str, output_file: str):
     """
     绘制方法在 Format、Syntax、Semantic 三个维度的雷达图
@@ -532,7 +800,7 @@ def plot_score_radar(input_csv: str, output_file: str):
         for dim, scores_map in zip(categories, [format_scores, syntax_scores, semantic_scores]):
             baseline_scores[dim].append(scores_map.get("original_src", 0))
 
-    #     # 各方法得分
+        # 各方法得分
         for method in format_scores.keys():
             if method == "original_src":
                 continue
@@ -541,7 +809,15 @@ def plot_score_radar(input_csv: str, output_file: str):
             for dim, scores_map in zip(categories, [format_scores, syntax_scores, semantic_scores]):
                 method_scores[method][dim].append(scores_map[method])
 
-    # # 计算每个方法每个维度的平均得分
+    with open("results/score-detail.txt", "w", encoding="utf-8-sig") as f:
+        for method, scores in method_scores.items():
+            f.write(method + "\n")
+            for dim, vals in scores.items():
+                f.write(dim + ":")
+                f.write(str(vals))
+                f.write("\n")
+            
+    # 计算每个方法每个维度的平均得分
     method_avg = {
         method: {dim: np.mean(vals) for dim, vals in scores.items()}
         for method, scores in method_scores.items()
@@ -549,35 +825,6 @@ def plot_score_radar(input_csv: str, output_file: str):
 
     # 原始代码基线平均得分
     baseline_avg = [np.mean(baseline_scores[dim]) for dim in categories]
-    
-    # all_scores = {dim: {} for dim in categories}
-    # baseline_scores = {dim: [] for dim in categories}
-
-    # # === 遍历每一行（任务） ===
-    # for _, row in df.iterrows():
-    #     format_scores = json.loads(row["format_score_map"])
-    #     syntax_scores = json.loads(row["syntax_score_map"])
-    #     semantic_scores = json.loads(row["semantic_score_map"])
-
-    #     for dim, scores_map in zip(categories, [format_scores, syntax_scores, semantic_scores]):
-    #         # 记录 baseline
-    #         baseline_scores[dim].append(scores_map.get("original_src", 0))
-
-    #         # 累积所有方法的分数
-    #         for method, val in scores_map.items():
-    #             if method == "original_src":
-    #                 continue
-    #             all_scores[dim].setdefault(method, []).append(val)
-
-    # # === 计算每个方法在每个维度的平均分 ===
-    # method_avg = {}
-    # for dim in categories:
-    #     for method, vals in all_scores[dim].items():
-    #         if method not in method_avg:
-    #             method_avg[method] = {}
-    #         method_avg[method][dim] = np.mean(vals)
-    # baseline_avg = [np.mean(baseline_scores[dim]) for dim in categories]
-    
 
     # 雷达图角度
     N = len(categories)
@@ -607,7 +854,7 @@ def plot_score_radar(input_csv: str, output_file: str):
     
     ax.set_ylim(2, 4)
 
-    plt.savefig(output_file, format="pdf")
+    plt.savefig(output_file, format="png")
    
     plt.close()
     
@@ -620,6 +867,7 @@ def plot_score_radar(input_csv: str, output_file: str):
     output_df.to_csv(output_csv, index_label="Method", float_format="%.4f")
 
 
+  
 def plot_method_boxplot(input_csv: str, output_dir: str):
     df = pd.read_csv(input_csv)
 
@@ -657,6 +905,8 @@ def plot_method_boxplot(input_csv: str, output_dir: str):
         plt.close()
         
 def plot_success_rate(records, output_file: str):
+    if not records:
+        return
     df = pd.DataFrame(records)
 
     methods = df["Method"].tolist()
@@ -680,6 +930,44 @@ def plot_success_rate(records, output_file: str):
     plt.tight_layout()
     plt.savefig(output_file, format="pdf")
     plt.close()
+
+def plot_success_rate_bar(records, output_file: str):
+    if not records:
+        return
+
+    df = pd.DataFrame(records)
+
+    methods = df["Method"].tolist()
+    x = range(len(methods))
+
+    plt.figure(figsize=(8, 6))
+
+    bars = plt.bar(x, df["Success Rate(%)"])
+
+    plt.xticks(x, methods, rotation=45)
+    plt.ylabel("Success Rate (%)")
+    plt.xlabel("Method")
+    plt.title("Comparison of Success Rates Across Methods", fontsize=14)
+    plt.ylim(0, 100)
+    plt.grid(axis="y", linestyle="--", alpha=0.5)
+
+    # 在柱子顶端标注数值
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height + 1,               # 稍微抬高，避免与柱子重叠
+            f"{height:.1f}",
+            ha="center",
+            va="bottom",
+            fontsize=10
+        )
+
+    plt.tight_layout()
+    plt.savefig(output_file, format="png")
+    plt.close()
+
+
 
 def plot_overall_success_rate(output_file: str):
     methods = ["egsi", "codebuff", "deepseek-r1-0528--free", "gpt-4.1"]
@@ -1033,23 +1321,28 @@ if __name__ == "__main__":
     graphs_dir = os.path.join(results_dir, "graphs")
     # find_false_positives(data_path)
     
+    group_data_by_experience(raw_data_path)
+    group_data_by_java_known(raw_data_path)
+    
     # preprocess(questionnar_data_dir, raw_data_path)
-    # process(raw_data_path, data_path)
+    process(raw_data_path, data_path)
     
     # graphs_dir = os.path.join(results_dir, "graphs")
-    basic_info_graph(raw_data_path, graphs_dir)
-    basic_info_to_csv(os.path.join(results_dir, "merged_data.csv"), os.path.join(results_dir, "basic_info.csv"))
-    success_rate_data = cal_success_rate(raw_data_path, os.path.join(results_dir, "success_rates.csv"))
+    # basic_info_graph(raw_data_path, graphs_dir)
+    # basic_info_to_csv(os.path.join(results_dir, "merged_data.csv"), os.path.join(results_dir, "basic_info.csv"))
+    success_rate_data = cal_success_rate(data_path, os.path.join(results_dir, "success_rates.csv"))
+    plot_success_rate_bar(success_rate_data, os.path.join(graphs_dir, "success_rate.png"))
     plot_score_radar(data_path, os.path.join(graphs_dir, "score_radar.pdf"))
     # plot_method_boxplot(data_path, graphs_dir)
+    # plot_violins(data_path)
     
-    # plot_success_rate(success_rate_data, os.path.join(graphs_dir, "success_rate.pdf"))
+    
     # plot_overall_success_rate(os.path.join(graphs_dir, "overall_success_rate.pdf"))
     
     # 计算forsee对于各个方法成功率和失败率的预测结果
-    output_agreement(data_path, os.path.join(results_dir, "agreements.csv"))
-    compute_overlap_to_csv(data_path, os.path.join(results_dir, "deviation_overlap.csv"))
+    # output_agreement(data_path, os.path.join(results_dir, "agreements.csv"))
+    # compute_overlap_to_csv(data_path, os.path.join(results_dir, "deviation_overlap.csv"))
     # evaluate_forsee(data_path, os.path.join(results_dir, "forsee_metrics.csv"))
     # evaluate_forsee(data_path, os.path.join(results_dir, "forsee_success_metrics.csv"),True, "success")
     # evaluate_forsee(data_path, os.path.join(results_dir, "forsee_failure_metrics.csv"), False, "failure")
-    merge_csv_files(questionnar_data_dir, os.path.join(results_dir, "merged_data.csv"))
+    # merge_csv_files(questionnar_data_dir, os.path.join(results_dir, "merged_data.csv"))
