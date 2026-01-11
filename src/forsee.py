@@ -617,18 +617,9 @@ def classify_transformed_results(transformation_method, min_target_lines) -> Cla
             tmp_result_collection.update_origin_author_for_all("", src_author)
             result_collection.add_results(tmp_result_collection)
 
-            
-            manual_results = []
             for r in unclassified_results:
                 if tmp_result_collection.get_result(target_author, r.src_id, project_name, src_author) is not None:
                     r.successful_trans = tmp_result_collection.get_result(target_author, f"{r.src_id}", project_name, src_author).istop1_success()
-                else:
-                    # code are too short
-                    invalid_results.append((project_name, r.pair_id))
-                    # create failure classification result manually
-                    manual_results.append(ClassificationResult(r.src_id, target_author, 1, [0, 1], [1, -1], 0, [0, 1], r.project_name, src_author))
-
-            result_collection.add_results_from_list(manual_results)
                     
         # result_manager.remove(invalid_results)
         result_manager.update_all()

@@ -1,4 +1,3 @@
-import psutil
 import threading
 import time
 import statistics

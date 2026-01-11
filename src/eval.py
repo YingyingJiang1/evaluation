@@ -502,11 +502,8 @@ def confidence_analysis(method, min_target_lines):
                 # 计算置信度变化
                 confidence_dict1 = original_classify_dict[r.project_name].get_confidence_dict([src_author, target_author],src_author, r.src_id)
                 confidence_dict2 = get_confidence_in_authors(transform_classify, [src_author, target_author]) # transformed code
-                if method == "codebuff" and 1 in confidence_dict2.values() and -1 in confidence_dict2.values():
-                    continue
-                distance = abs(confidence_dict1[src_author]-confidence_dict1[target_author])
-                after_distance = abs(confidence_dict2[src_author]-confidence_dict2[target_author])
-                if confidence_dict2[target_author] > confidence_dict1[target_author] and confidence_dict2[src_author] <= confidence_dict1[src_author]:
+                preference_gain_toward_target = (confidence_dict2[target_author] - confidence_dict2[src_author]) - (confidence_dict1[target_author] - confidence_dict1[src_author])
+                if preference_gain_toward_target > 0:
                     prositives_count += 1
                     
                 relative_distance_dec.append((after_distance - distance) / distance)
@@ -516,7 +513,7 @@ def confidence_analysis(method, min_target_lines):
         relativa_distance = round(np.mean(relative_distance_dec) * 100, 2)
         similarity_gain = -relativa_distance
         median_gain = -np.median(relative_distance_dec)
-        print(f"{method}: {positive_percent}, {similarity_gain}, {median_gain}")
+        print(f"{method}: {positive_percent}")
               
 
 def create_tasks(methods):
@@ -551,10 +548,10 @@ if __name__ == "__main__":
         "gpt-4.1",
     ]
     
-    # for method in methods:
-    #     confidence_analysis(method, 200)
+    for method in methods:
+        confidence_analysis(method, 200)
     
-    create_tasks(methods)
+    # create_tasks(methods)
 
     # eval_target_quality(200)
     # eval_src_quality("egsi", 200)
